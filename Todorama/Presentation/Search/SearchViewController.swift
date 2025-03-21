@@ -46,7 +46,6 @@ class SearchViewController: BaseViewController {
         cancelButton.tintColor = .tdWhite
         searchBar.placeholder = "원하는 드라마의 제목을 입력해주세요"
         collectionView.register(PosterCollectionViewCell.self, forCellWithReuseIdentifier: PosterCollectionViewCell.identifier)
-        collectionView.register(SectionHeaderView.self,   forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: SectionHeaderView.reuseIdentifier)
     }
     func createLayout() -> UICollectionViewCompositionalLayout {
 
@@ -61,11 +60,7 @@ class SearchViewController: BaseViewController {
 
         return layout
     }
-    private func createSectionHeader() -> NSCollectionLayoutBoundarySupplementaryItem {
-        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(44))
-        let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
-        return header
-    }
+
 
     override func bind() {
         let input = SearchViewModel.Input()

@@ -42,8 +42,7 @@ class SearchViewController: BaseViewController {
         }
     }
     override func configureView() {
-        cancelButton.setTitle("취소", for: .normal)
-        cancelButton.tintColor = .tdWhite
+        cancelButton.setAttributedTitle(NSAttributedString(string: "취소", attributes: [.font : Fonts.sectionTitleFont]), for: .normal)
         searchBar.placeholder = "원하는 드라마의 제목을 입력해주세요"
         collectionView.register(PosterCollectionViewCell.self, forCellWithReuseIdentifier: PosterCollectionViewCell.identifier)
     }

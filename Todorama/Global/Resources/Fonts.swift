@@ -12,22 +12,22 @@ enum Fonts {
     static let textColor = UIColor.tdGray
 
     static var navTitleFont: UIFont {
-        return UIFont.systemFont(ofSize: 18, weight: .bold)
+        return UIFont.systemFont(ofSize: 24, weight: .bold)
     }
     
     static var countFont: UIFont {
-        return UIFont.systemFont(ofSize: 24, weight: .medium)
+        return UIFont.systemFont(ofSize: 28, weight: .medium)
     }
     
     static var sectionTitleFont: UIFont {
-        return UIFont.systemFont(ofSize: 14, weight: .bold)
+        return UIFont.systemFont(ofSize: 18, weight: .bold)
     }
     
     static var dramaTitleFont: UIFont {
-        return UIFont.systemFont(ofSize: 12, weight: .bold)
+        return UIFont.systemFont(ofSize: 16, weight: .bold)
     }
     
     static var textFont: UIFont {
-        return UIFont.systemFont(ofSize: 10, weight: .regular)
+        return UIFont.systemFont(ofSize: 14, weight: .regular)
     }
 }

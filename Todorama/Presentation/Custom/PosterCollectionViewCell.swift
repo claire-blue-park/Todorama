@@ -34,6 +34,7 @@ final class PosterCollectionViewCell: UICollectionViewCell {
             make.height.equalTo(17)
             make.horizontalEdges.equalToSuperview()
         }
+        label.font = Fonts.textFont
         label.isHidden = true
         imageView.clipsToBounds = true
         self.imageView.layer.cornerRadius = 8
@@ -45,6 +46,5 @@ final class PosterCollectionViewCell: UICollectionViewCell {
 
     func configure(with imageName: String) {
         imageView.image = UIImage(systemName: imageName)
-        imageView.backgroundColor = .red
     }
 }

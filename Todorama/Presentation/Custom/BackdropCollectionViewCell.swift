@@ -20,7 +20,7 @@ class BackdropCollectionViewCell: UICollectionViewCell {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = .boldSystemFont(ofSize: 16)
-        label.textColor = .white
+        label.textColor = .tdWhite
         return label
     }()
     
@@ -50,9 +50,9 @@ class BackdropCollectionViewCell: UICollectionViewCell {
             make.horizontalEdges.top.equalToSuperview()
             make.bottom.equalTo(titleLabel.snp.top)
         }
-        genreLabel.backgroundColor = .systemPink
-        titleLabel.backgroundColor = .purple
-        backdropImageView.backgroundColor = .cyan
+        titleLabel.font = Fonts.dramaTitleFont
+        genreLabel.font = Fonts.textFont
+        
 
     }
     
@@ -61,7 +61,7 @@ class BackdropCollectionViewCell: UICollectionViewCell {
     }
     
     func configure() {
-        backdropImageView.image = UIImage(systemName: "heart")
+        backdropImageView.image = SystemImages.check.image
         titleLabel.text = "title"
         genreLabel.text = "genre"
     }

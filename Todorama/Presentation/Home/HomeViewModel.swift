@@ -12,7 +12,7 @@ import RxDataSources
 
 class HomeViewModel {
     let sections: Observable<[SectionModel<String, AnyHashable>]>
-
+    let headerTitle = [Strings.SectionTitle.popularDrama.text, Strings.SectionTitle.similarContents.text]
     init() {
         let popularMovies: [PopularDetail] = (1...10).map {
             PopularDetail(id: $0, poster: "https://via.placeholder.com/150?text=Popular\($0)")
@@ -30,9 +30,9 @@ class HomeViewModel {
         }
 
         sections = Observable.just([
-            SectionModel(model: "실시간 인기 드라마", items: popularMovies),
-            SectionModel(model: "트렌드 영화", items: trendingMovies),
-            SectionModel(model: "추천 영화", items: recommendations)
+            SectionModel(model: "", items: popularMovies),
+            SectionModel(model: headerTitle[0], items: trendingMovies),
+            SectionModel(model: headerTitle[1], items: recommendations)
         ])
     }
 }

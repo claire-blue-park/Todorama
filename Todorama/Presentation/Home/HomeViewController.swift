@@ -24,7 +24,7 @@ class HomeViewController: UIViewController {
         bind()
     }
     func configureView() {
-        view.backgroundColor = .white
+        view.backgroundColor = .tdBlack
         view.addSubview(scrollView)
         scrollView.addSubview(collectionView)
         scrollView.snp.makeConstraints { make in
@@ -34,7 +34,6 @@ class HomeViewController: UIViewController {
             make.verticalEdges.equalTo(view.safeAreaLayoutGuide)
             make.width.equalTo(scrollView)
         }
-        collectionView.backgroundColor = .systemMint
     }
     func popularSectionLayout() -> NSCollectionLayoutSection {
         let itemSize = NSCollectionLayoutSize(
@@ -118,26 +117,23 @@ class HomeViewController: UIViewController {
             if let popular = item.base as? PopularDetail {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PosterCollectionViewCell.identifier, for: indexPath) as! PosterCollectionViewCell
                 cell.configure(with: "star")
-                cell.backgroundColor = .yellow
                 return cell
             } else if let trend = item.base as? TrendDetail {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: BackdropCollectionViewCell.identifier, for: indexPath) as! BackdropCollectionViewCell
                 cell.configure()
-                cell.backgroundColor = .orange
                 return cell
             } else if let recommendation = item.base as? RecommendationDetail {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PosterCollectionViewCell.identifier, for: indexPath) as! PosterCollectionViewCell
                 cell.configure(with: "person")
-                cell.backgroundColor = .green
                 return cell
             }
             return UICollectionViewCell()
         }, configureSupplementaryView: { dataSource, collectionView, kind, indexPath in
             let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: SectionHeaderView.reuseIdentifier, for: indexPath) as! SectionHeaderView
+            header.configure(with: dataSource.sectionModels[indexPath.section].model)
             return header
         })
         viewModel.sections.bind(to: collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
-        
     }
 }

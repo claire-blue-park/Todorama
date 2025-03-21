@@ -81,7 +81,7 @@ class RateViewController: BaseViewController {
         let dataSource = RxCollectionViewSectionedReloadDataSource<SectionModel<String, AnyHashable>>( configureCell: { dataSource, collectionView, indexPath, item in
             if let popular = item.base as? PopularDetail {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PosterCollectionViewCell.identifier, for: indexPath) as! PosterCollectionViewCell
-                cell.configure(with: "star")
+                cell.configure(with: "star", rate: 4.4)
                 return cell
             }
             return UICollectionViewCell()

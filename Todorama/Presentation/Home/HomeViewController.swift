@@ -10,31 +10,7 @@ import RxSwift
 import RxCocoa
 import RxDataSources
 
-struct Popular: Decodable, Hashable {
-    let results: [PopularDetail]
-}
-struct PopularDetail: Decodable, Hashable {
-    let id: Int
-    let poster: String
-}
 
-struct Trend: Decodable, Hashable {
-    let results: [TrendDetail]
-}
-struct TrendDetail: Decodable, Hashable {
-    let id: Int
-    let backdrop_path: String
-    let name: String
-    let genre_ids: [Int]
-}
-
-struct Recommandation: Decodable, Hashable {
-    let results: [RecommandationDetail]
-}
-struct RecommandationDetail: Decodable, Hashable {
-    let id: Int
-    let poster: String
-}
 class HomeViewController: UIViewController {
 
     let disposeBag = DisposeBag()
@@ -149,7 +125,7 @@ class HomeViewController: UIViewController {
                 cell.configure()
                 cell.backgroundColor = .orange
                 return cell
-            } else if let recommendation = item.base as? RecommandationDetail {
+            } else if let recommendation = item.base as? RecommendationDetail {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PosterCollectionViewCell.identifier, for: indexPath) as! PosterCollectionViewCell
                 cell.configure(with: "person")
                 cell.backgroundColor = .green

@@ -25,8 +25,8 @@ class HomeViewModel {
                         genre_ids: [28, 12, 16]) // 예시로 액션, 모험, 애니메이션
         }
         
-        let recommendations: [RecommandationDetail] = (1...10).map {
-            RecommandationDetail(id: $0, poster: "https://via.placeholder.com/150?text=Rec\($0)")
+        let recommendations: [RecommendationDetail] = (1...10).map {
+            RecommendationDetail(id: $0, poster: "https://via.placeholder.com/150?text=Rec\($0)")
         }
 
         sections = Observable.just([

@@ -10,7 +10,7 @@ import RxSwift
 import RxCocoa
 import RxDataSources
 
-class SearchViewController: UIViewController {
+class SearchViewController: BaseViewController {
     let disposeBag = DisposeBag()
     let viewModel = SearchViewModel()
     let searchBar = UISearchBar()
@@ -19,15 +19,13 @@ class SearchViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        configure()
-        configureView()
-        bind()
     }
-    func configureView() {
-        view.backgroundColor = .tdBlack
+    override func configureHierarchy() {
         view.addSubview(searchBar)
         view.addSubview(cancelButton)
         view.addSubview(collectionView)
+    }
+    override func configureLayout() {
         searchBar.snp.makeConstraints { make in
             make.leading.top.equalTo(view.safeAreaLayoutGuide)
             make.trailing.equalTo(view.safeAreaLayoutGuide).inset(44)
@@ -42,9 +40,13 @@ class SearchViewController: UIViewController {
             make.top.equalTo(searchBar.snp.bottom)
             make.horizontalEdges.bottom.equalTo(view.safeAreaLayoutGuide)
         }
+    }
+    override func configureView() {
         cancelButton.setTitle("취소", for: .normal)
         cancelButton.tintColor = .tdWhite
         searchBar.placeholder = "원하는 드라마의 제목을 입력해주세요"
+        collectionView.register(PosterCollectionViewCell.self, forCellWithReuseIdentifier: PosterCollectionViewCell.identifier)
+        collectionView.register(SectionHeaderView.self,   forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: SectionHeaderView.reuseIdentifier)
     }
     func createLayout() -> UICollectionViewCompositionalLayout {
 
@@ -64,12 +66,10 @@ class SearchViewController: UIViewController {
         let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
         return header
     }
-    func configure() {
-        collectionView.register(PosterCollectionViewCell.self, forCellWithReuseIdentifier: PosterCollectionViewCell.identifier)
-        collectionView.register(SectionHeaderView.self,   forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: SectionHeaderView.reuseIdentifier)
-    }
-    func bind() {
 
+    override func bind() {
+        let input = SearchViewModel.Input()
+        let output = viewModel.transform(input: input)
         let dataSource = RxCollectionViewSectionedReloadDataSource<SectionModel<String, AnyHashable>>( configureCell: { dataSource, collectionView, indexPath, item in
             if let popular = item.base as? PopularDetail {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PosterCollectionViewCell.identifier, for: indexPath) as! PosterCollectionViewCell
@@ -78,7 +78,7 @@ class SearchViewController: UIViewController {
             }
             return UICollectionViewCell()
         })
-        viewModel.sections.bind(to: collectionView.rx.items(dataSource: dataSource))
+        output.sections.bind(to: collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
     }
 }

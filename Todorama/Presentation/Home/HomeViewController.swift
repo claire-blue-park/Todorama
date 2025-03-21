@@ -11,7 +11,7 @@ import RxCocoa
 import RxDataSources
 
 
-class HomeViewController: UIViewController {
+class HomeViewController: BaseViewController {
 
     let disposeBag = DisposeBag()
     let viewModel = HomeViewModel()
@@ -19,14 +19,12 @@ class HomeViewController: UIViewController {
     let scrollView = UIScrollView()
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureView()
-        configure()
-        bind()
     }
-    func configureView() {
-        view.backgroundColor = .tdBlack
+    override func configureHierarchy() {
         view.addSubview(scrollView)
         scrollView.addSubview(collectionView)
+    }
+    override func configureLayout() {
         scrollView.snp.makeConstraints { make in
             make.edges.equalTo(view.safeAreaLayoutGuide)
         }
@@ -34,6 +32,13 @@ class HomeViewController: UIViewController {
             make.verticalEdges.equalTo(view.safeAreaLayoutGuide)
             make.width.equalTo(scrollView)
         }
+    }
+    override func configureView() {
+        collectionView.register(PosterCollectionViewCell.self, forCellWithReuseIdentifier: PosterCollectionViewCell.identifier)
+        collectionView.register(BackdropCollectionViewCell.self, forCellWithReuseIdentifier: BackdropCollectionViewCell.identifier)
+
+        collectionView.register(SectionHeaderView.self,   forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: SectionHeaderView.reuseIdentifier)
+
     }
     func popularSectionLayout() -> NSCollectionLayoutSection {
         let itemSize = NSCollectionLayoutSize(
@@ -105,14 +110,11 @@ class HomeViewController: UIViewController {
         return layout
     }
 
-    func configure() {
-        collectionView.register(PosterCollectionViewCell.self, forCellWithReuseIdentifier: PosterCollectionViewCell.identifier)
-        collectionView.register(BackdropCollectionViewCell.self, forCellWithReuseIdentifier: BackdropCollectionViewCell.identifier)
 
-        collectionView.register(SectionHeaderView.self,   forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: SectionHeaderView.reuseIdentifier)
-    }
 
-    func bind() {
+    override func bind() {
+        let input = HomeViewModel.Input()
+        let output = viewModel.transform(input: input)
         let dataSource = RxCollectionViewSectionedReloadDataSource<SectionModel<String, AnyHashable>>( configureCell: { dataSource, collectionView, indexPath, item in
             if let popular = item.base as? PopularDetail {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PosterCollectionViewCell.identifier, for: indexPath) as! PosterCollectionViewCell
@@ -133,7 +135,8 @@ class HomeViewController: UIViewController {
             header.configure(with: dataSource.sectionModels[indexPath.section].model)
             return header
         })
-        viewModel.sections.bind(to: collectionView.rx.items(dataSource: dataSource))
+        
+        output.sections.bind(to: collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
     }
 }

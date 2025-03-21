@@ -10,10 +10,16 @@ import RxSwift
 import RxCocoa
 import RxDataSources
 
-class HomeViewModel {
-    let sections: Observable<[SectionModel<String, AnyHashable>]>
+class HomeViewModel: BaseViewModel {
+    var disposeBag = DisposeBag()
     let headerTitle = [Strings.SectionTitle.popularDrama.text, Strings.SectionTitle.similarContents.text]
-    init() {
+    struct Input {
+        
+    }
+    struct Output {
+        let sections: Observable<[SectionModel<String, AnyHashable>]>
+    }
+    func transform(input: Input) -> Output {
         let popularMovies: [PopularDetail] = (1...10).map {
             PopularDetail(id: $0, poster: "https://via.placeholder.com/150?text=Popular\($0)")
         }
@@ -29,11 +35,13 @@ class HomeViewModel {
             RecommendationDetail(id: $0, poster: "https://via.placeholder.com/150?text=Rec\($0)")
         }
 
-        sections = Observable.just([
+        let sections: Observable<[SectionModel<String, AnyHashable>]> = Observable.just([
             SectionModel(model: "", items: popularMovies),
             SectionModel(model: headerTitle[0], items: trendingMovies),
             SectionModel(model: headerTitle[1], items: recommendations)
         ])
+        return Output(sections: sections)
     }
+
 }
 

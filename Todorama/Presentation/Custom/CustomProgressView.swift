@@ -45,7 +45,15 @@ final class CustomProgressView: UIView {
     // MARK: - Methods
     private func setupProgressView() {
         addSubview(progressView)
-        
+        // Cell에서 다음과 같이 사용 (확인 후 지워주세용)
+        /*
+         customProgressView.snp.makeConstraints {
+             $0.leading.trailing.equalToSuperview()
+             $0.top.equalTo(categoryLabel.snp.bottom).offset(8)
+             $0.bottom.equalToSuperview()
+             $0.height.equalTo(8) <- 두께 적당끄
+         }
+         */
         progressView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }

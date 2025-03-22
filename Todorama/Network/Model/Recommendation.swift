@@ -10,7 +10,7 @@ import Foundation
 struct Recommendation: Decodable, Hashable {
     let results: [RecommendationDetail]
 }
-struct RecommendationDetail: Decodable, Hashable {
+struct RecommendationDetail: Decodable, Hashable, IdentifiableModel {
     let id: Int
-    let poster: String
+    let poster_path: String?
 }

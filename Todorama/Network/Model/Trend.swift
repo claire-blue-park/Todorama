@@ -10,9 +10,9 @@ import Foundation
 struct Trend: Decodable, Hashable {
     let results: [TrendDetail]
 }
-struct TrendDetail: Decodable, Hashable {
+struct TrendDetail: Decodable, Hashable, IdentifiableModel {
     let id: Int
-    let backdrop_path: String
+    let backdrop_path: String?
     let name: String
     let genre_ids: [Int]
 }

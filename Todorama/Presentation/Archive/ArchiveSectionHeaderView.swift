@@ -7,7 +7,7 @@
 
 import UIKit
 import SnapKit
-
+// 공통로직 사용으로 삭제 예정
 final class ArchiveSectionHeaderView: UICollectionReusableView, Identifier {
     static var identifier: String {
            return String(describing: self)

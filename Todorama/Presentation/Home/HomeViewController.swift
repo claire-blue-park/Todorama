@@ -10,6 +10,7 @@ import RxSwift
 import RxCocoa
 import RxDataSources
 
+import Alamofire
 
 class HomeViewController: BaseViewController {
 
@@ -29,7 +30,8 @@ class HomeViewController: BaseViewController {
             make.edges.equalTo(view.safeAreaLayoutGuide)
         }
         collectionView.snp.makeConstraints { make in
-            make.verticalEdges.equalTo(view.safeAreaLayoutGuide)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(-44)
+            make.bottom.equalTo(view.safeAreaLayoutGuide)
             make.width.equalTo(scrollView)
         }
     }
@@ -138,5 +140,13 @@ class HomeViewController: BaseViewController {
         
         output.sections.bind(to: collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
+        
+        collectionView.rx.modelSelected(Any.self)
+            .bind(with: self) { owner, model in
+                if let model = model as? IdentifiableModel {
+                    let id = model.id
+                    // push seriesVC
+                }
+            }.disposed(by: disposeBag)
     }
 }

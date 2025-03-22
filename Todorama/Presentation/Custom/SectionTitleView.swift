@@ -10,7 +10,11 @@ import SnapKit
 
 final class SectionTitleView: UIView {
     private let label = UILabel()
-    let title: String
+    var title: String {
+        didSet {
+            label.text = title
+        }
+    }
     private var labelUnderline: CALayer?
     
     override init(frame: CGRect) {
@@ -37,7 +41,7 @@ final class SectionTitleView: UIView {
 
         label.text = title
         label.font = Fonts.sectionTitleFont
-        label.textColor = .white
+        label.textColor = .tdWhite
         addSubview(label)
         label.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(16)
@@ -51,7 +55,7 @@ final class SectionTitleView: UIView {
         let viewUnderline = underLine(width: frame.width, height: frame.height, color: .lightGray)
         self.layer.addSublayer(viewUnderline)
         
-        labelUnderline = underLine(width: label.frame.width, height: label.frame.height, color: .white, borderW: 2)
+        labelUnderline = underLine(width: label.frame.width, height: label.frame.height, color: .tdWhite, borderW: 2)
         if let labelUnderline = labelUnderline {
             label.layer.addSublayer(labelUnderline)
         }

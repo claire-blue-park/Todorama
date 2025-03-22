@@ -32,14 +32,21 @@ class SearchViewController: BaseViewController {
         let dataSource = RxCollectionViewSectionedReloadDataSource<SectionModel<String, AnyHashable>>( configureCell: { dataSource, collectionView, indexPath, item in
             if let popular = item.base as? PopularDetail {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PosterCollectionViewCell.identifier, for: indexPath) as! PosterCollectionViewCell
-                cell.configure(with: "star")
+                print(popular.id)
+                cell.configure(with: popular.poster_path)
                 return cell
             }
             return UICollectionViewCell()
         })
         output.sections.bind(to: collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
+        output.errorMessage.drive(with: self) { owner, error in
+            // error는 (errorType, isNetworkConnected)인 튜플값
+            let errorMessage = error.0.errorMessage
+            print(errorMessage)// 에러 메시지
+            let isConnected = error.1 // 네트워크가 연결된 상태인지
         
+        }.disposed(by: disposeBag)
         collectionView.rx.modelSelected(Any.self)
             .bind(with: self) { owner, model in
                 if let model = model as? IdentifiableModel {

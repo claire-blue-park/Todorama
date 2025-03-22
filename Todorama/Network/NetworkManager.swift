@@ -9,59 +9,6 @@ import Foundation
 import Alamofire
 import RxSwift
 
-enum NetworkRouter: URLRequestConvertible {
-    case popular
-    case trending
-    case recommendation(id: Int)
-    case search(query: String, page: Int)
-    case series(id: Int)
-    case episode(id: Int, season: Int)
-    
-    var baseURL: URL {//1396
-        switch self {
-        case .popular:
-            return URL(string: "https://api.themoviedb.org/3/tv/top_rated")!
-        case .trending:
-            return URL(string: "https://api.themoviedb.org/3/trending/tv/day")!
-        case .recommendation(let id):
-            return URL(string: "https://api.themoviedb.org/3/tv/\(id)/recommendations")!
-        case .search:
-            return URL(string: "https://api.themoviedb.org/3/search/tv")!
-        case .series(let id):
-            return URL(string: "https://api.themoviedb.org/3/tv/\(id)")!
-        case .episode(let id, let season):
-            return URL(string: "https://api.themoviedb.org/3/tv/\(id)/season/\(season)")!
-        }
-    }
-    var header: HTTPHeaders {
-        return ["Authorization": "Bearer \(APIKey.token)" ]
-    }
-    var path: String {
-        return ""
-    }
-    var method: HTTPMethod {
-        return .get
-    }
-    var parameters: Parameters {
-        switch self {
-        case .popular, .trending,.recommendation, .series, .episode:
-            return ["language":"ko-KR"]
-        case .search(let query, let page):
-            return ["query": query, "page": page]
-        }
-    }
-    func asURLRequest() throws -> URLRequest {
-        var urlString = baseURL.absoluteString
-        urlString += path
-        var request = URLRequest(url: URL(string: urlString)!)
-        request.headers = header
-        request.method = method
-        let urlRequest = try URLEncoding.default.encode(request, with: parameters)
-        return urlRequest
-    }
-    
-}
-
 class NetworkManager {
     static let shared = NetworkManager()
     

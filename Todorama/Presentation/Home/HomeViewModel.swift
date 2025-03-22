@@ -21,7 +21,7 @@ class HomeViewModel: BaseViewModel {
     }
     func transform(input: Input) -> Output {
         let popularMovies: [PopularDetail] = (1...10).map {
-            PopularDetail(id: $0, poster: "https://via.placeholder.com/150?text=Popular\($0)")
+            PopularDetail(id: $0, poster_path: "https://via.placeholder.com/150?text=Popular\($0)")
         }
         
         let trendingMovies: [TrendDetail] = (1...10).map {
@@ -32,7 +32,7 @@ class HomeViewModel: BaseViewModel {
         }
         
         let recommendations: [RecommendationDetail] = (1...10).map {
-            RecommendationDetail(id: $0, poster: "https://via.placeholder.com/150?text=Rec\($0)")
+            RecommendationDetail(id: $0, poster_path: "https://via.placeholder.com/150?text=Rec\($0)")
         }
 
         let sections: Observable<[SectionModel<String, AnyHashable>]> = Observable.just([

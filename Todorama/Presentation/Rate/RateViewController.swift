@@ -50,7 +50,7 @@ class RateViewController: BaseViewController {
         config.imagePlacement = .trailing
         config.imagePadding = 2
         sortButton.configuration = config
-        sortButton.setAttributedTitle(NSAttributedString(string: "최신순", attributes: [.font : Fonts.sectionTitleFont]), for: .normal)
+        sortButton.setAttributedTitle(NSAttributedString(string: Strings.Rate.date.text, attributes: [.font : Fonts.sectionTitleFont]), for: .normal)
         sortButton.isSelected = true
     }
     func createLayout() -> UICollectionViewCompositionalLayout {
@@ -68,7 +68,7 @@ class RateViewController: BaseViewController {
     }
     private func sortButtonChanged() {
         sortButton.isSelected.toggle()
-        let newTitle = sortButton.isSelected ? "최신순" : "별점순"
+        let newTitle = sortButton.isSelected ? Strings.Rate.date.text : Strings.Rate.star.text
         sortButton.setAttributedTitle(NSAttributedString(string: newTitle, attributes: [.font : Fonts.sectionTitleFont]), for: .normal)
     }
     override func bind() {
@@ -88,6 +88,14 @@ class RateViewController: BaseViewController {
         })
         output.sections.bind(to: collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
+        
+        collectionView.rx.modelSelected(Any.self)
+            .bind(with: self) { owner, model in
+                if let model = model as? IdentifiableModel {
+                    let id = model.id
+                    // push seriesVC
+                }
+            }.disposed(by: disposeBag)
     }
 
 }

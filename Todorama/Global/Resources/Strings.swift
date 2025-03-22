@@ -93,5 +93,29 @@ enum Strings {
             }
         }
     }
+    
+    // MARK: - placeholder
+    enum Placeholder {
+        case search
+        
+        var text: String {
+            switch self {
+            case .search: "원하는 드라마의 제목을 입력해주세요"
+            }
+        }
+    }
+
+    // MARK: - 별점 화면 정렬
+    enum Rate {
+        case date
+        case star
+        
+        var text: String {
+            switch self {
+            case .date : "최신순"
+            case .star : "별점순"
+            }
+        }
+    }
 
 }

@@ -29,7 +29,8 @@ class HomeViewController: BaseViewController {
             make.edges.equalTo(view.safeAreaLayoutGuide)
         }
         collectionView.snp.makeConstraints { make in
-            make.verticalEdges.equalTo(view.safeAreaLayoutGuide)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(-44)
+            make.bottom.equalTo(view.safeAreaLayoutGuide)
             make.width.equalTo(scrollView)
         }
     }

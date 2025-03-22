@@ -18,7 +18,7 @@ enum SystemImages {
     var name: String {
         switch self {
         case .star:
-            "star.fill"
+            "star.circle.fill"
         case .plus:
             "plus.circle.fill"
         case .check:

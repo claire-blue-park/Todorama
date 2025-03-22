@@ -18,6 +18,7 @@ class BaseViewController: UIViewController {
         bind()
     }
     
+    
     // MARK: - View 계층 구조 설정
     func configureHierarchy() { }
     // MARK: - View 레이아웃 설정

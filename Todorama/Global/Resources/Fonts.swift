@@ -30,4 +30,8 @@ enum Fonts {
     static var textFont: UIFont {
         return UIFont.systemFont(ofSize: 14, weight: .regular)
     }
+    
+    static var accessoryFont: UIFont {
+        return UIFont.systemFont(ofSize: 12, weight: .regular)
+    }
 }

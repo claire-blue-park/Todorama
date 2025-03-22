@@ -34,4 +34,9 @@ extension UILabel {
         textColor = Fonts.textColor
     }
     
+    func accessoryStyle() {
+        font = Fonts.accessoryFont
+        textColor = Fonts.textColor
+    }
+    
 }

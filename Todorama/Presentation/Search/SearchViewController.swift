@@ -42,8 +42,8 @@ class SearchViewController: BaseViewController {
         }
     }
     override func configureView() {
-        cancelButton.setAttributedTitle(NSAttributedString(string: "취소", attributes: [.font : Fonts.sectionTitleFont]), for: .normal)
-        searchBar.placeholder = "원하는 드라마의 제목을 입력해주세요"
+        cancelButton.setAttributedTitle(NSAttributedString(string: Strings.Global.cancel.text, attributes: [.font : Fonts.sectionTitleFont]), for: .normal)
+        searchBar.placeholder = Strings.Placeholder.search.text
         collectionView.register(PosterCollectionViewCell.self, forCellWithReuseIdentifier: PosterCollectionViewCell.identifier)
     }
     func createLayout() -> UICollectionViewCompositionalLayout {

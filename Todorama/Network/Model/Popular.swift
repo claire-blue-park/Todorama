@@ -9,7 +9,7 @@ import Foundation
 struct Popular: Decodable, Hashable {
     let results: [PopularDetail]
 }
-struct PopularDetail: Decodable, Hashable {
+struct PopularDetail: Decodable, Hashable, IdentifiableModel {
     let id: Int
     let poster: String
 }

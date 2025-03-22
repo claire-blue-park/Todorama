@@ -28,7 +28,7 @@ final class SectionTitleView: UIView {
         super.init(frame: .zero)
         setupView()
         guard let window = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
-                let screenSize = window.screen.bounds
+        let screenSize = window.screen.bounds
         frame = CGRect(x: 0, y: 44, width: screenSize.width, height: 1)
     }
     

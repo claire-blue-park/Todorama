@@ -11,6 +11,6 @@ struct Popular: Decodable, Hashable {
 }
 struct PopularDetail: Decodable, Hashable, IdentifiableModel {
     let id: Int
-    let poster: String
+    let poster_path: String
 }
 

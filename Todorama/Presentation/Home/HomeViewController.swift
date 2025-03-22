@@ -138,5 +138,13 @@ class HomeViewController: BaseViewController {
         
         output.sections.bind(to: collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
+        
+        collectionView.rx.modelSelected(Any.self)
+            .bind(with: self) { owner, model in
+                if let model = model as? IdentifiableModel {
+                    let id = model.id
+                    // push seriesVC
+                }
+            }.disposed(by: disposeBag)
     }
 }

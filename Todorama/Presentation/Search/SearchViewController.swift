@@ -20,6 +20,34 @@ class SearchViewController: BaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
     }
+    override func bind() {
+        let recentText = searchBar.rx.text.orEmpty
+        let input = SearchViewModel.Input(cancelButtonTapped: cancelButton.rx.tap)
+        let output = viewModel.transform(input: input)
+        
+        output.cancelButtonTapped.drive(with: self) { owner, _ in
+            owner.searchBar.text = ""
+        }.disposed(by: disposeBag)
+        
+        let dataSource = RxCollectionViewSectionedReloadDataSource<SectionModel<String, AnyHashable>>( configureCell: { dataSource, collectionView, indexPath, item in
+            if let popular = item.base as? PopularDetail {
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PosterCollectionViewCell.identifier, for: indexPath) as! PosterCollectionViewCell
+                cell.configure(with: "star")
+                return cell
+            }
+            return UICollectionViewCell()
+        })
+        output.sections.bind(to: collectionView.rx.items(dataSource: dataSource))
+            .disposed(by: disposeBag)
+        
+        collectionView.rx.modelSelected(Any.self)
+            .bind(with: self) { owner, model in
+                if let model = model as? IdentifiableModel {
+                    let id = model.id
+                    // push seriesVC
+                }
+            }.disposed(by: disposeBag)
+    }
     override func configureHierarchy() {
         view.addSubview(searchBar)
         view.addSubview(cancelButton)
@@ -61,18 +89,5 @@ class SearchViewController: BaseViewController {
     }
 
 
-    override func bind() {
-        let input = SearchViewModel.Input()
-        let output = viewModel.transform(input: input)
-        let dataSource = RxCollectionViewSectionedReloadDataSource<SectionModel<String, AnyHashable>>( configureCell: { dataSource, collectionView, indexPath, item in
-            if let popular = item.base as? PopularDetail {
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PosterCollectionViewCell.identifier, for: indexPath) as! PosterCollectionViewCell
-                cell.configure(with: "star")
-                return cell
-            }
-            return UICollectionViewCell()
-        })
-        output.sections.bind(to: collectionView.rx.items(dataSource: dataSource))
-            .disposed(by: disposeBag)
-    }
+
 }

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 import SnapKit
 
 final class PosterCollectionViewCell: UICollectionViewCell {
@@ -44,8 +45,15 @@ final class PosterCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func configure(with imageName: String, rate: Double? = nil) {
-        imageView.image = UIImage(systemName: imageName)
+    func configure(with imageName: String?, rate: Double? = nil) {
+        if let imageName  {
+            let imageBase = "https://image.tmdb.org/t/p/w500"
+            let url = URL(string: imageBase + imageName)
+            imageView.kf.setImage(with: url)
+        } else {
+            imageView.image = UIImage(systemName: "star")
+        }
+
         if let rate {
             label.isHidden = false
             configureRateLabel(rate)

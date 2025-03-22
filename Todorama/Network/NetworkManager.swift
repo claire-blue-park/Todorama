@@ -24,7 +24,8 @@ class NetworkManager {
                         value.onNext(result)
                     case .failure(let error) :
                         let code = response.response?.statusCode
-                        value.onError(self.getErrorMessage(code: code ?? 501))
+                        value.onError(self.getError(code: code ?? 501))
+                        // statusCode를 받아서 해당되는 NetworkError를 방출
                         print(T.self, error)
                         
                     }
@@ -32,7 +33,7 @@ class NetworkManager {
             return Disposables.create()
         }
     }
-    private func getErrorMessage(code: Int) -> NetworkError {
+    private func getError(code: Int) -> NetworkError {
 
         switch code {
         case 400:

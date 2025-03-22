@@ -10,6 +10,7 @@ import RxSwift
 import RxCocoa
 import RxDataSources
 
+import Alamofire
 
 class HomeViewController: BaseViewController {
 

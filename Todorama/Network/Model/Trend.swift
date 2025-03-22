@@ -12,7 +12,7 @@ struct Trend: Decodable, Hashable {
 }
 struct TrendDetail: Decodable, Hashable, IdentifiableModel {
     let id: Int
-    let backdrop_path: String
+    let backdrop_path: String?
     let name: String
     let genre_ids: [Int]
 }

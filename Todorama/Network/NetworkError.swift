@@ -19,6 +19,7 @@ enum NetworkError: Error {
     case serviceUnavailable // 503
     case gatewayTimeout // 504
     case tooManyRequests // 429
+    case networkError
     case customError(code: Int, message: String) // 기타 에러
     
     var errorMessage: String {
@@ -45,6 +46,8 @@ enum NetworkError: Error {
             return "서버 응답 시간이 초과되었습니다."
         case .tooManyRequests:
             return "요청 횟수가 허용된 한도를 초과했습니다."
+        case .networkError:
+            return "네트워크 연결이 좋지 않습니다."
         case .customError(_, let message):
             return message
         }

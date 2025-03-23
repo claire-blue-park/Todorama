@@ -64,10 +64,12 @@ final class SearchViewModel: BaseViewModel {
                 let popularDetail = popular.results
 
                 owner.internalData.searchData.onNext(popularDetail)
+                NetworkMonitor.shared.stopNetworkMonitor()
             } onError: { _, error in
                 print("search error", error)
             } onDisposed: { _ in
                 print("search disposed")
+                NetworkMonitor.shared.stopNetworkMonitor()
             }.disposed(by: disposeBag)
     }
 }

@@ -27,7 +27,7 @@ class BackdropCollectionViewCell: UICollectionViewCell {
     private let genreLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14)
-        label.textColor = .lightGray
+        label.textColor = .tdGray
         return label
     }()
     
@@ -50,8 +50,8 @@ class BackdropCollectionViewCell: UICollectionViewCell {
             make.horizontalEdges.top.equalToSuperview()
             make.bottom.equalTo(titleLabel.snp.top)
         }
-        titleLabel.font = Fonts.dramaTitleFont
-        genreLabel.font = Fonts.textFont
+        titleLabel.dramaTitleStyle()
+        genreLabel.textStyle()
         
 
     }

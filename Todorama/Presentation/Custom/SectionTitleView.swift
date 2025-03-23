@@ -40,7 +40,7 @@ final class SectionTitleView: UIView {
         self.backgroundColor = .black
 
         label.text = title
-        label.font = Fonts.sectionTitleFont
+        label.sectionTitleStyle()
         label.textColor = .tdWhite
         addSubview(label)
         label.snp.makeConstraints { make in
@@ -52,7 +52,7 @@ final class SectionTitleView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        let viewUnderline = underLine(width: frame.width, height: frame.height, color: .lightGray)
+        let viewUnderline = underLine(width: frame.width, height: frame.height, color: .tdGray)
         self.layer.addSublayer(viewUnderline)
         
         labelUnderline = underLine(width: label.frame.width, height: label.frame.height, color: .tdWhite, borderW: 2)

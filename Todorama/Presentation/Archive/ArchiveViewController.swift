@@ -117,8 +117,20 @@ final class ArchiveViewController: BaseViewController {
                     return UICollectionViewCell()
                 }
                 
-                // BackdropCollectionViewCell 구성
-                cell.configure()
+                // ContentModel은 이제 BackDropModel 프로토콜을 구현하므로
+                // 직접 BackDrop 생성자에 전달
+                let backdropItem = BackDrop(modelType: item)
+                
+                // 현재 섹션 타입 확인 (watching 섹션인지)
+                let sectionType = dataSource.sectionModels[indexPath.section].model
+                let showProgress = (sectionType == .watching || sectionType == .watched)
+                
+                // BackdropCollectionViewCell의 configure 메서드 수정
+                if showProgress {
+                    cell.configure(item: backdropItem, progress: item.progress)
+                } else {
+                    cell.configure(item: backdropItem)
+                }
                 
                 return cell
             },
@@ -176,7 +188,15 @@ final class ArchiveViewController: BaseViewController {
                 self?.navigationController?.pushViewController(rateVC, animated: true)
             })
             .disposed(by: disposeBag)
-
+        
+        collectionView.rx.itemSelected
+            .subscribe(onNext: { [weak self] indexPath in
+                // Handle selection
+                print("Selected item at \(indexPath)")
+                // 해당 셀이 갖고 있는 id로 id에 맞는 Series뷰컨으로 전환
+            })
+            .disposed(by: disposeBag)
+        
         
     }
     

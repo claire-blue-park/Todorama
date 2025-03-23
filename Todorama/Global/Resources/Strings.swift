@@ -16,6 +16,9 @@ enum Strings {
         case watching
         case comment
         case rate
+        case season
+        case countUnit
+        case episode
         
         var text: String {
             switch self {
@@ -31,6 +34,12 @@ enum Strings {
                 "코멘트"
             case .rate:
                 "별점"
+            case .season:
+                "시즌"
+            case .countUnit:
+                "개"
+            case .episode:
+                "에피소드"
             }
         }
     }

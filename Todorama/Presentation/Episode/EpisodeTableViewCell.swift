@@ -101,11 +101,11 @@ final class EpisodeTableViewCell: UITableViewCell {
     
     // MARK: - Configure Cell
     
-    func bindData(with episode: Episode) {
-        episodeNumberLabel.text = "\(episode.number)화"
-        durationLabel.text = episode.duration
-        dateLabel.text = episode.broadcastDate
-        episodeDescriptionLabel.text = episode.description
-        checkmarkImageView.tintColor = episode.isWatched ? .tdMain : .tdDarkGray
-    }
+//    func bindData(with episode: Episode) {
+//        episodeNumberLabel.text = "\(episode.number)화"
+//        durationLabel.text = episode.duration
+//        dateLabel.text = episode.broadcastDate
+//        episodeDescriptionLabel.text = episode.description
+//        checkmarkImageView.tintColor = episode.isWatched ? .tdMain : .tdDarkGray
+//    }
 }

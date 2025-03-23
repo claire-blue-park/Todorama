@@ -68,14 +68,14 @@ final class SeriesCollectionViewCell: UICollectionViewCell {
         }
     }
     
-    func configure(with series: Series) {
-        titleLabel.text = series.title
-        episodeCountLabel.text = "\(series.episodeCount)개 에피소드"
-        
-        if let image = series.posterImage {
-            posterImageView.image = image
-        } else {
-            posterImageView.backgroundColor = .darkGray
-        }
-    }
+//    func configure(with series: Series) {
+//        titleLabel.text = series.title
+//        episodeCountLabel.text = "\(series.episodeCount)개 에피소드"
+//        
+//        if let image = series.posterImage {
+//            posterImageView.image = image
+//        } else {
+//            posterImageView.backgroundColor = .darkGray
+//        }
+//    }
 }

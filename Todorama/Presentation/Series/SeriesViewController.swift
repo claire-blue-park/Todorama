@@ -6,27 +6,26 @@
 //
 
 import UIKit
+import Kingfisher
 import RxCocoa
 import RxSwift
 import SnapKit
 
-
 final class SeriesViewController: BaseViewController {
     private let disposeBag = DisposeBag()
-    private var seriesId: String?
-    private var seriesData: Series?
+    private var viewModel: SeriesViewModel
     
+    // MARK: - 뷰 컴포넌트
     private let backdropView = UIImageView()
     private let dramaTitleLabel = UILabel()
     private let infoLabel = UILabel()
     private let synopsisLabel = UILabel()
     private let infoSectionTitle = SectionTitleView(title: Strings.SectionTitle.seriesInfo.text)
     private lazy var seriesCollectionView = UICollectionView(frame: .zero, collectionViewLayout: createRelatedSeriesLayout())
-
-    private let linkButton = UIButton()
+    private let linkButton = UIButton() // 이미지로 변경?
     
-    init(seriesId: String) {
-        self.seriesId = seriesId
+    init(id: Int) {
+        self.viewModel = SeriesViewModel(id: id)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -40,17 +39,21 @@ final class SeriesViewController: BaseViewController {
     }
     
     private func loadSeriesData() {
-        guard let id = seriesId, let series = DummyData.shared.getSeriesById(id) else { return }
-        seriesData = series
-        updateUI(with: series)
-    
+        let input = SeriesViewModel.Input()
+        let output = viewModel.transform(input: input)
+        
+        output.result.subscribe(with: self) { owner, series in
+            owner.updateUI(with: series)
+            print(series)
+        }.disposed(by: disposeBag)
+
     }
     
     private func updateUI(with series: Series) {
-        backdropView.image = series.backdropImage
-        dramaTitleLabel.text = series.title
-        infoLabel.text = "\(series.year) · \(series.channel) · \(series.genre)"
-        synopsisLabel.text = series.synopsis
+        backdropView.kf.setImage(with: URL(string: series.backdrop_path ?? ""))
+        dramaTitleLabel.text = series.name
+        infoLabel.text = "시즌 \(series.number_of_seasons)개 · \(series.status) · \(series.genres[0].name)"
+        synopsisLabel.text = series.overview
         
         seriesCollectionView.reloadData()
     }
@@ -108,13 +111,10 @@ final class SeriesViewController: BaseViewController {
         backdropView.clipsToBounds = true
         backdropView.backgroundColor = .tdMain
         
-        dramaTitleLabel.text = "슬기로운 의사생활"
         dramaTitleLabel.navTitleStyle()
         
-        infoLabel.text = "시즌 2개 · 방영 종료 · 드라마 · 코미디"
         infoLabel.textStyle()
-        
-        synopsisLabel.text = "누구가는 태어나고 누구가는 삶을 끝내는 탄생과 죽음이 공존하는, 인생의 축소판이라 불리는 병원에서 평범한 듯 특별한 하루하루를 살아가는 사람들과 눈빛만 봐도 알 수 있는 20년지기 친구들의 케미 스토리를 담은 드라마"
+    
         synopsisLabel.textStyle()
         synopsisLabel.numberOfLines = 0
 
@@ -129,8 +129,8 @@ final class SeriesViewController: BaseViewController {
         seriesCollectionView.backgroundColor = .clear
         seriesCollectionView.showsHorizontalScrollIndicator = false
         seriesCollectionView.register(SeriesCollectionViewCell.self, forCellWithReuseIdentifier: "SeriesCollectionViewCell")
-        seriesCollectionView.delegate = self
-        seriesCollectionView.dataSource = self
+//        seriesCollectionView.delegate = self
+//        seriesCollectionView.dataSource = self
     }
     
     private func createRelatedSeriesLayout() -> UICollectionViewLayout {
@@ -157,19 +157,19 @@ final class SeriesViewController: BaseViewController {
 }
 
 // MARK: - UICollectionViewDataSource, UICollectionViewDelegate
-extension SeriesViewController: UICollectionViewDataSource, UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return DummyData.shared.series.count
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SeriesCollectionViewCell", for: indexPath) as? SeriesCollectionViewCell else {
-            return UICollectionViewCell()
-        }
-        
-        let series = DummyData.shared.series[indexPath.item]
-        cell.configure(with: series)
-        
-        return cell
-    }
-}
+//extension SeriesViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+//    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+//        return 10
+//    }
+//    
+//    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+//        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "SeriesCollectionViewCell", for: indexPath) as? SeriesCollectionViewCell else {
+//            return UICollectionViewCell()
+//        }
+//        
+//        let series = DummyData.shared.series[indexPath.item]
+//        cell.configure(with: series)
+//        
+//        return cell
+//    }
+//}

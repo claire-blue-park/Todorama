@@ -37,7 +37,6 @@ final class SeriesCollectionViewCell: UICollectionViewCell {
     }
     
     private func configurePosterImageView() {
-        posterImageView.backgroundColor = .tdMain
         posterImageView.contentMode = .scaleAspectFill
         posterImageView.clipsToBounds = true
         posterImageView.layer.cornerRadius = 4
@@ -64,18 +63,17 @@ final class SeriesCollectionViewCell: UICollectionViewCell {
             make.top.equalTo(titleLabel.snp.bottom).offset(4)
             make.centerX.equalToSuperview()
             make.leading.trailing.equalToSuperview().inset(4)
-//            make.bottom.equalToSuperview().inset(8)
         }
     }
     
-//    func configure(with series: Series) {
-//        titleLabel.text = series.title
-//        episodeCountLabel.text = "\(series.episodeCount)개 에피소드"
-//        
-//        if let image = series.posterImage {
-//            posterImageView.image = image
-//        } else {
-//            posterImageView.backgroundColor = .darkGray
-//        }
-//    }
+    func bindData(with season: Season) {
+        titleLabel.text = season.name
+        episodeCountLabel.text = "\(season.episode_count)\(Strings.Global.countUnit.text) \(Strings.Global.episode.text)"
+        
+        if let image = season.poster_path {
+            posterImageView.kf.setImage(with: URL(string: ImageSize.poster154(url: image).fullUrl))
+        } else {
+            posterImageView.backgroundColor = .darkGray
+        }
+    }
 }

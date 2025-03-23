@@ -18,19 +18,19 @@ final class SeriesViewModel: BaseViewModel {
     }
     
     struct Input {
-//        let onViewDidLoad: Observable<Void>
+
     }
     
     struct Output {
-        var result: PublishRelay<Series>
+        var result: PublishSubject<Series>
     }
     
     func transform(input: Input) -> Output {
-        let result = PublishRelay<Series>()
+        let result = PublishSubject<Series>()
         
         NetworkManager.shared.callRequest(target: .series(id: self.id ?? -1), model: Series.self)
             .subscribe(with: self) { owner, response in
-                result.accept(response)
+                result.onNext(response)
             }
             .disposed(by: disposeBag)
 
@@ -39,7 +39,4 @@ final class SeriesViewModel: BaseViewModel {
         )
     }
     
-//    private func callRequest(id: Int) -> Observable<Series> {
-//        return
-//    }
 }

@@ -22,11 +22,14 @@ final class CountButton: UIButton {
         self.init(frame: .zero)
         countLabel.text = "\(count)"
         nameLabel.text = name
+        
         // 색상 설정
         countLabel.textColor = .tdWhite
         nameLabel.textColor = .tdWhite
-        // 상호작용 설정
+        
+        
         isUserInteractionEnabled = isInteractive
+        
     }
     
     required init?(coder: NSCoder) {
@@ -39,6 +42,10 @@ final class CountButton: UIButton {
         stackView.axis = .vertical
         stackView.alignment = .center
         stackView.spacing = 4
+        
+        // 중요: 스택뷰의 사용자 상호작용 비활성화
+        stackView.isUserInteractionEnabled = false
+        
         addSubview(stackView)
         
         // 스택뷰 레이아웃
@@ -49,6 +56,10 @@ final class CountButton: UIButton {
         // 라벨 설정 및 스택뷰에 추가
         countLabel.countStyle()
         nameLabel.textStyle()
+        
+        // 중요: 라벨의 사용자 상호작용 비활성화
+        countLabel.isUserInteractionEnabled = false
+        nameLabel.isUserInteractionEnabled = false
         
         stackView.addArrangedSubview(countLabel)
         stackView.addArrangedSubview(nameLabel)

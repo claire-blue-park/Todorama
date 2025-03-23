@@ -154,6 +154,7 @@ final class ArchiveViewController: BaseViewController {
             .subscribe(onNext: { [weak self] indexPath in
                 // Handle selection
                 print("Selected item at \(indexPath)")
+                // 해당 셀이 갖고 있는 id로 id에 맞는 드라마 화면으로 화면전환
             })
             .disposed(by: disposeBag)
     }
@@ -211,14 +212,14 @@ final class ArchiveViewController: BaseViewController {
     @objc private func commentButtonTapped() {
         print("Comment button tapped - navigate to CommentViewController")
         // 실제 구현에서는 CommentViewController로 이동
-        // let commentVC = CommentViewController()
-        // navigationController?.pushViewController(commentVC, animated: true)
+         let commentVC = CommentViewController()
+         navigationController?.pushViewController(commentVC, animated: true)
     }
     
     @objc private func rateButtonTapped() {
         print("Rate button tapped - navigate to RateViewController")
         // 실제 구현에서는 RateViewController로 이동
-        // let rateVC = RateViewController()
-        // navigationController?.pushViewController(rateVC, animated: true)
+         let rateVC = RateViewController()
+         navigationController?.pushViewController(rateVC, animated: true)
     }
 }

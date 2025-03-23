@@ -118,15 +118,15 @@ class HomeViewController: BaseViewController {
         let dataSource = RxCollectionViewSectionedReloadDataSource<SectionModel<String, AnyHashable>>( configureCell: { dataSource, collectionView, indexPath, item in
             if let popular = item.base as? PopularDetail {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PosterCollectionViewCell.identifier, for: indexPath) as! PosterCollectionViewCell
-                cell.configure(with: "star")
+                cell.configure(with: popular.poster_path)
                 return cell
             } else if let trend = item.base as? TrendDetail {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: BackdropCollectionViewCell.identifier, for: indexPath) as! BackdropCollectionViewCell
-                cell.configure()
+                cell.configure(item: BackDrop(modelType: trend))
                 return cell
             } else if let recommendation = item.base as? RecommendationDetail {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PosterCollectionViewCell.identifier, for: indexPath) as! PosterCollectionViewCell
-                cell.configure(with: "person")
+                cell.configure(with: recommendation.poster_path)
                 return cell
             }
             return UICollectionViewCell()

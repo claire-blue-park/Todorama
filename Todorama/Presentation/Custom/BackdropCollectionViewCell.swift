@@ -52,9 +52,22 @@ class BackdropCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configure() {
-        backdropImageView.image = SystemImages.check.image
-        titleLabel.text = "title"
-        genreLabel.text = "genre"
+    func configure(item: BackDrop? = nil) {
+        if let item {
+            if let imageName = item.imagePath  {
+                let imageBase = "https://image.tmdb.org/t/p/w500"
+                let url = URL(string: imageBase + imageName)
+                backdropImageView.kf.setImage(with: url)
+            } else {
+                backdropImageView.image = UIImage(systemName: "star")
+            }
+            titleLabel.text = item.name
+            genreLabel.text = item.genre
+        }
+        else {
+            backdropImageView.image = UIImage(systemName: "star")
+            titleLabel.text = "title"
+            genreLabel.text = "Genre"
+        }
     }
 }

@@ -16,6 +16,9 @@ final class CommentViewController: BaseViewController {
     private let viewModel = CommentViewModel()
     private let disposeBag = DisposeBag()
     
+    // 현재 검색어를 저장하는 프로퍼티
+    private var currentSearchQuery = BehaviorRelay<String>(value: "")
+    
     // MARK: - UI Components
     private let searchContainerView = UIView()
     private let searchBar = UISearchBar()
@@ -104,7 +107,7 @@ final class CommentViewController: BaseViewController {
         searchContainerView.backgroundColor = .black
         
         // 검색바 설정
-        searchBar.placeholder = "드라마 검색"
+        searchBar.placeholder = "드라마 제목, 줄거리, 코멘트 검색"
         searchBar.searchBarStyle = .minimal
         searchBar.barStyle = .black
         searchBar.tintColor = .white
@@ -131,7 +134,7 @@ final class CommentViewController: BaseViewController {
         emptyStateImageView.image = SystemImages.pencil.image.withRenderingMode(.alwaysTemplate)
         emptyStateImageView.tintColor = .lightGray
         
-        emptyStateLabel.text = "작성한 코멘트가 없습니다"
+        emptyStateLabel.text = "검색 결과가 없습니다\n다른 검색어를 입력해보세요"
         emptyStateLabel.textAlignment = .center
         emptyStateLabel.textColor = .lightGray
         emptyStateLabel.font = Fonts.textFont
@@ -143,6 +146,11 @@ final class CommentViewController: BaseViewController {
         let searchText = searchBar.rx.text.orEmpty.asObservable()
         let cancelTap = cancelButton.rx.tap.asObservable()
         
+        // 검색어를 currentSearchQuery에 바인딩
+        searchText
+            .bind(to: currentSearchQuery)
+            .disposed(by: disposeBag)
+        
         let input = CommentViewModel.Input(
             viewDidLoad: Observable.just(()),
             searchText: searchText,
@@ -152,10 +160,19 @@ final class CommentViewController: BaseViewController {
         // ViewModel Output
         let output = viewModel.transform(input: input)
         
-        // 코멘트 목록 바인딩
+        // 코멘트 목록 바인딩 - 검색어 하이라이팅을 위해 cellType으로 설정
         output.comments
-            .drive(tableView.rx.items(cellIdentifier: CommentTableViewCell.identifier, cellType: CommentTableViewCell.self)) { index, item, cell in
-                cell.configure(with: item)
+            .drive(tableView.rx.items) { [weak self] (tableView, index, item) in
+                guard let self = self else { return UITableViewCell() }
+                guard let cell = tableView.dequeueReusableCell(
+                    withIdentifier: CommentTableViewCell.identifier
+                ) as? CommentTableViewCell else {
+                    return UITableViewCell()
+                }
+                
+                // 현재 검색어 전달
+                cell.configure(with: item, searchQuery: self.currentSearchQuery.value)
+                return cell
             }
             .disposed(by: disposeBag)
         
@@ -163,6 +180,13 @@ final class CommentViewController: BaseViewController {
         output.isEmpty
             .drive(onNext: { [weak self] isEmpty in
                 self?.emptyStateView.isHidden = !isEmpty
+                
+                // 검색어가 있을 때와 없을 때 다른 메시지 표시
+                if !isEmpty || self?.currentSearchQuery.value.isEmpty == true {
+                    self?.emptyStateLabel.text = "작성한 코멘트가 없습니다"
+                } else {
+                    self?.emptyStateLabel.text = "검색 결과가 없습니다\n다른 검색어를 입력해보세요"
+                }
             })
             .disposed(by: disposeBag)
         
@@ -170,6 +194,7 @@ final class CommentViewController: BaseViewController {
         output.clearSearchText
             .drive(onNext: { [weak self] _ in
                 self?.searchBar.text = ""
+                self?.currentSearchQuery.accept("")
                 self?.searchBar.resignFirstResponder()
             })
             .disposed(by: disposeBag)
@@ -178,6 +203,7 @@ final class CommentViewController: BaseViewController {
         tableView.rx.modelSelected(CommentItem.self)
             .subscribe(onNext: { [weak self] comment in
                 print("Selected comment: \(comment.title)")
+                // TODO: 상세 화면으로 이동
             })
             .disposed(by: disposeBag)
     }

@@ -18,6 +18,9 @@ final class CommentTableViewCell: UITableViewCell {
     private let commentLabel = UILabel()
     private let dateLabel = UILabel()
     
+    // 검색어 하이라이트를 위한 속성
+    private var currentQuery: String = ""
+    
     // MARK: - Initializers
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -101,12 +104,21 @@ final class CommentTableViewCell: UITableViewCell {
         
         // Comment Label
         commentLabel.textStyle()
+        commentLabel.numberOfLines = 3
     }
     
     // MARK: - Cell Configuration
-    func configure(with item: CommentItem) {
-        titleLabel.text = item.title
-        commentLabel.text = item.comment
+    func configure(with item: CommentItem, searchQuery: String = "") {
+        self.currentQuery = searchQuery.lowercased()
+        
+        // 제목과 코멘트에 검색어 하이라이트 적용
+        if !currentQuery.isEmpty {
+            highlightText(label: titleLabel, text: item.title)
+            highlightText(label: commentLabel, text: item.comment)
+        } else {
+            titleLabel.text = item.title
+            commentLabel.text = item.comment
+        }
         
         // 날짜 형식 포맷팅
         let dateFormatter = DateFormatter()
@@ -127,12 +139,35 @@ final class CommentTableViewCell: UITableViewCell {
         }
     }
     
+    // 검색어를 강조하는 메서드
+    private func highlightText(label: UILabel, text: String) {
+        guard !currentQuery.isEmpty else {
+            label.text = text
+            return
+        }
+        
+        let attributedString = NSMutableAttributedString(string: text)
+        let range = (text.lowercased() as NSString).range(of: currentQuery)
+        
+        if range.location != NSNotFound {
+            attributedString.addAttribute(.backgroundColor, value: UIColor.tdMain.withAlphaComponent(0.3), range: range)
+            attributedString.addAttribute(.foregroundColor, value: UIColor.white, range: range)
+            attributedString.addAttribute(.font, value: UIFont.boldSystemFont(ofSize: label.font.pointSize), range: range)
+            label.attributedText = attributedString
+        } else {
+            label.text = text
+        }
+    }
+    
     override func prepareForReuse() {
         super.prepareForReuse()
         posterImageView.image = nil
         posterImageView.backgroundColor = .tdMain
         titleLabel.text = nil
+        titleLabel.attributedText = nil
         commentLabel.text = nil
+        commentLabel.attributedText = nil
         dateLabel.text = nil
+        currentQuery = ""
     }
 }

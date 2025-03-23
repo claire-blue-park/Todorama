@@ -17,22 +17,17 @@ class BackdropCollectionViewCell: UICollectionViewCell {
         return imageView
     }()
     
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.font = .boldSystemFont(ofSize: 16)
-        label.textColor = .tdWhite
-        return label
-    }()
+    private let titleLabel = UILabel()
     
-    private let genreLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 14)
-        label.textColor = .tdGray
-        return label
-    }()
+    private let genreLabel = UILabel()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+
+        configureView()
+
+    }
+    private func configureView() {
         contentView.addSubview(backdropImageView)
         contentView.addSubview(titleLabel)
         contentView.addSubview(genreLabel)
@@ -52,10 +47,7 @@ class BackdropCollectionViewCell: UICollectionViewCell {
         }
         titleLabel.dramaTitleStyle()
         genreLabel.textStyle()
-        
-
     }
-    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

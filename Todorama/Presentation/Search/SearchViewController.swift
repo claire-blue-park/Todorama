@@ -32,7 +32,6 @@ class SearchViewController: BaseViewController {
         let dataSource = RxCollectionViewSectionedReloadDataSource<SectionModel<String, AnyHashable>>( configureCell: { dataSource, collectionView, indexPath, item in
             if let popular = item.base as? PopularDetail {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PosterCollectionViewCell.identifier, for: indexPath) as! PosterCollectionViewCell
-                print(popular.id)
                 cell.configure(with: popular.poster_path)
                 return cell
             }

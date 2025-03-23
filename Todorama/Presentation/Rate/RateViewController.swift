@@ -33,9 +33,8 @@ class RateViewController: BaseViewController {
 
         collectionView.register(PosterCollectionViewCell.self, forCellWithReuseIdentifier: PosterCollectionViewCell.identifier)
         navTitleView.text = Strings.NavTitle.rate.text
-        navTitleView.font = Fonts.navTitleFont
-        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: navTitleView)
-        
+        navTitleView.navTitleStyle()
+        navigationItem.titleView = navTitleView
         configureSortButton()
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: sortButton)
         

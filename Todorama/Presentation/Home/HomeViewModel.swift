@@ -42,6 +42,14 @@ class HomeViewModel: BaseViewModel {
         ])
         return Output(sections: sections)
     }
-
+    private func getPopularData(){
+        
+    }
+    private func getTrendData() {
+        
+    }
+    private func getRecommendationData() {
+        
+    }
 }
 

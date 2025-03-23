@@ -99,9 +99,7 @@ final class ArchiveViewController: BaseViewController {
         buttonStackView.distribution = .fillEqually
         buttonStackView.spacing = 8
         
-        // 버튼 액션 설정
-        commentButton.addTarget(self, action: #selector(commentButtonTapped), for: .touchUpInside)
-        rateButton.addTarget(self, action: #selector(rateButtonTapped), for: .touchUpInside)
+       
     }
     
     override func bind() {
@@ -154,8 +152,32 @@ final class ArchiveViewController: BaseViewController {
             .subscribe(onNext: { [weak self] indexPath in
                 // Handle selection
                 print("Selected item at \(indexPath)")
+                // 해당 셀이 갖고 있는 id로 id에 맞는 Series뷰컨으로 전환
             })
             .disposed(by: disposeBag)
+        
+        print("commentButton isUserInteractionEnabled: \(commentButton.isUserInteractionEnabled)")
+        print("rateButton isUserInteractionEnabled: \(rateButton.isUserInteractionEnabled)")
+        
+        commentButton.rx.tap
+            .do(onNext: { _ in print("commentButton tapped") }) // 로그 추가
+            .subscribe(onNext: { [weak self] _ in
+                print("Navigating to CommentViewController") // 로그 추가
+                let commentVC = CommentViewController()
+                self?.navigationController?.pushViewController(commentVC, animated: true)
+            })
+            .disposed(by: disposeBag)
+
+        rateButton.rx.tap
+            .do(onNext: { _ in print("rateButton tapped") }) // 로그 추가
+            .subscribe(onNext: { [weak self] _ in
+                print("Navigating to RateViewController") // 로그 추가
+                let rateVC = RateViewController()
+                self?.navigationController?.pushViewController(rateVC, animated: true)
+            })
+            .disposed(by: disposeBag)
+
+        
     }
     
     // MARK: - Collection View Configuration
@@ -207,18 +229,5 @@ final class ArchiveViewController: BaseViewController {
         return section
     }
     
-    // MARK: - Actions
-    @objc private func commentButtonTapped() {
-        print("Comment button tapped - navigate to CommentViewController")
-        // 실제 구현에서는 CommentViewController로 이동
-        // let commentVC = CommentViewController()
-        // navigationController?.pushViewController(commentVC, animated: true)
-    }
-    
-    @objc private func rateButtonTapped() {
-        print("Rate button tapped - navigate to RateViewController")
-        // 실제 구현에서는 RateViewController로 이동
-        // let rateVC = RateViewController()
-        // navigationController?.pushViewController(rateVC, animated: true)
-    }
+   
 }

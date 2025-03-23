@@ -15,6 +15,23 @@ enum SystemImages {
     case pencil
     case heart
     
+    enum tab {
+        case houseICON
+        case magnifICON
+        case archiveICON
+
+        var name: String {
+            switch self {
+            case .houseICON:
+                "house"
+            case .magnifICON:
+                "magnifyingglass"
+            case .archiveICON:
+                "archivebox"
+            }
+        }
+    }
+    
     var name: String {
         switch self {
         case .star:

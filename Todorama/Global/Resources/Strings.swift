@@ -52,6 +52,23 @@ enum Strings {
         }
     }
     
+    enum TabBarTitle {
+        case houseTab
+        case searchTab
+        case archiveTab
+        
+        var name: String {
+            switch self {
+            case .houseTab:
+                "홈"
+            case .searchTab:
+                "검색"
+            case .archiveTab:
+                "보관함"
+            }
+        }
+    }
+    
     // MARK: - 컬렉션 뷰에 해당하는 섹션 타이틀
     enum SectionTitle {
         case popularDrama

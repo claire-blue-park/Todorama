@@ -50,19 +50,22 @@ final class SeriesViewController: BaseViewController {
         output.result
             .map { $0.seasons }
             .asDriver(onErrorJustReturn: [])
-            .drive(seriesCollectionView.rx.items(cellIdentifier: SeriesCollectionViewCell.identifier, cellType: SeriesCollectionViewCell.self)) {(row, element, cell) in
+            .drive(seriesCollectionView.rx.items(
+                cellIdentifier: SeriesCollectionViewCell.identifier,
+                cellType: SeriesCollectionViewCell.self)) {(row, element, cell) in
 
                 cell.bindData(with: element)
-                
             }
             .disposed(by: disposeBag)
 
     }
     
     private func updateUI(with series: Series) {
-        backdropView.kf.setImage(with: URL(string: series.backdrop_path ?? ""))
+        if let image = series.backdrop_path {
+            backdropView.kf.setImage(with: URL(string: ImageSize.backdrop780(url: image).fullUrl))
+        }
         dramaTitleLabel.text = series.name
-        infoLabel.text = "시즌 \(series.number_of_seasons)개 · \(series.status) · \(series.genres[0].name)"
+        infoLabel.text = "\(Strings.Global.season.text) \(series.number_of_seasons)\(Strings.Global.countUnit.text) · \(series.status) · \(series.genres[0].name)"
         synopsisLabel.text = series.overview
         
         seriesCollectionView.reloadData()
@@ -119,7 +122,6 @@ final class SeriesViewController: BaseViewController {
         
         backdropView.contentMode = .scaleAspectFill
         backdropView.clipsToBounds = true
-        backdropView.backgroundColor = .tdMain
         
         dramaTitleLabel.navTitleStyle()
         
@@ -139,8 +141,7 @@ final class SeriesViewController: BaseViewController {
         seriesCollectionView.backgroundColor = .clear
         seriesCollectionView.showsHorizontalScrollIndicator = false
         seriesCollectionView.register(SeriesCollectionViewCell.self, forCellWithReuseIdentifier: "SeriesCollectionViewCell")
-//        seriesCollectionView.delegate = self
-//        seriesCollectionView.dataSource = self
+
     }
     
     private func createRelatedSeriesLayout() -> UICollectionViewLayout {

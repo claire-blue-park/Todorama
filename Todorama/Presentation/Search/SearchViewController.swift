@@ -19,16 +19,19 @@ class SearchViewController: BaseViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        searchBar.becomeFirstResponder()
     }
     override func bind() {
-        let recentText = searchBar.rx.text.orEmpty
-        let input = SearchViewModel.Input(cancelButtonTapped: cancelButton.rx.tap)
+        let input = SearchViewModel.Input(cancelButtonTapped: cancelButton.rx.tap, searchButtonTapped: searchBar.rx.searchButtonClicked.withLatestFrom(searchBar.rx.text.orEmpty), prefetchItem: collectionView.rx.prefetchItems)
         let output = viewModel.transform(input: input)
         
+        output.resignKeyboardTrigger.drive(with: self) { owner, _ in
+            owner.view.endEditing(true)
+        }.disposed(by: disposeBag)
         output.cancelButtonTapped.drive(with: self) { owner, _ in
             owner.searchBar.text = ""
+            owner.view.endEditing(true)
         }.disposed(by: disposeBag)
-        
         let dataSource = RxCollectionViewSectionedReloadDataSource<SectionModel<String, AnyHashable>>( configureCell: { dataSource, collectionView, indexPath, item in
             if let popular = item.base as? PopularDetail {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PosterCollectionViewCell.identifier, for: indexPath) as! PosterCollectionViewCell
@@ -40,10 +43,9 @@ class SearchViewController: BaseViewController {
         output.sections.bind(to: collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
         output.errorMessage.drive(with: self) { owner, error in
-            // error는 (errorType, isNetworkConnected)인 튜플값
             let errorMessage = error.0.errorMessage
-            print(errorMessage)// 에러 메시지
-            let isConnected = error.1 // 네트워크가 연결된 상태인지
+            print(errorMessage)
+            let isConnected = error.1
         
         }.disposed(by: disposeBag)
         collectionView.rx.modelSelected(Any.self)

@@ -9,12 +9,14 @@ import UIKit
 import SnapKit
 import RxSwift
 import RxCocoa
+import RxDataSources
 import Kingfisher
 
 final class ArchiveViewController: BaseViewController {
     
     // MARK: - Properties
     private let viewModel = ArchiveViewModel()
+    private let disposeBag = DisposeBag()
     
     // MARK: - UI Components
     // 상단 카테고리 버튼들
@@ -27,11 +29,9 @@ final class ArchiveViewController: BaseViewController {
     private lazy var watchedButton = CountButton(count: 3, name: Strings.Global.alreadyWatched.text, isInteractive: false)
     private lazy var commentButton = CountButton(count: 88, name: Strings.Global.comment.text, isInteractive: true)
     private lazy var rateButton = CountButton(count: 40, name: Strings.Global.rate.text, isInteractive: true)
-    private var dataSource: UICollectionViewDiffableDataSource<ArchiveSection, ContentModel>!
     
     // 컨텐츠 컬렉션 뷰
     private lazy var collectionView: UICollectionView = {
-        // 컴포지션 레이아웃 생성
         let layout = createCompositionalLayout()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         return collectionView
@@ -90,8 +90,9 @@ final class ArchiveViewController: BaseViewController {
         buttonContainerView.backgroundColor = .black
         collectionView.backgroundColor = .black
         
-        collectionView.register(ArchiveContentCell.self, forCellWithReuseIdentifier: ArchiveContentCell.identifier)
-        collectionView.register(ArchiveSectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: ArchiveSectionHeaderView.identifier)
+        // 셀 및 헤더 등록
+        collectionView.register(BackdropCollectionViewCell.self, forCellWithReuseIdentifier: BackdropCollectionViewCell.identifier)
+        collectionView.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: SectionHeaderView.reuseIdentifier)
         
         // 버튼 스택뷰 설정
         buttonStackView.axis = .horizontal
@@ -104,8 +105,37 @@ final class ArchiveViewController: BaseViewController {
     }
     
     override func bind() {
-        // 데이터소스 먼저 생성 (중요!)
-        dataSource = createDataSource()
+        // RxDataSources 설정
+        let dataSource = RxCollectionViewSectionedReloadDataSource<ArchiveSectionModel>(
+            configureCell: { dataSource, collectionView, indexPath, item in
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: BackdropCollectionViewCell.identifier,
+                    for: indexPath
+                ) as? BackdropCollectionViewCell else {
+                    return UICollectionViewCell()
+                }
+                
+                // BackdropCollectionViewCell 구성
+                cell.configure()
+                
+                return cell
+            },
+            configureSupplementaryView: { dataSource, collectionView, kind, indexPath in
+                guard kind == UICollectionView.elementKindSectionHeader,
+                      let headerView = collectionView.dequeueReusableSupplementaryView(
+                        ofKind: kind,
+                        withReuseIdentifier: SectionHeaderView.reuseIdentifier,
+                        for: indexPath
+                      ) as? SectionHeaderView else {
+                    return UICollectionReusableView()
+                }
+                
+                let section = dataSource.sectionModels[indexPath.section].model
+                headerView.configure(with: section.title)
+                
+                return headerView
+            }
+        )
         
         // ViewModel 바인딩
         let input = ArchiveViewModel.Input(
@@ -114,24 +144,10 @@ final class ArchiveViewController: BaseViewController {
         
         let output = viewModel.transform(input: input)
         
-        // 섹션 데이터 관찰 및 업데이트
+        // 섹션 데이터 바인딩
         output.sections
-            .drive(onNext: { [weak self] sections in
-                guard let self = self else { return }
-                
-                var snapshot = NSDiffableDataSourceSnapshot<ArchiveSection, ContentModel>()
-                
-                for section in sections {
-                    snapshot.appendSections([section.type])
-                    snapshot.appendItems(section.items, toSection: section.type)
-                }
-                
-                // 메인 스레드에서 실행
-                DispatchQueue.main.async {
-                    self.dataSource.apply(snapshot, animatingDifferences: true)
-                }
-            })
-            .disposed(by: viewModel.disposeBag)
+            .drive(collectionView.rx.items(dataSource: dataSource))
+            .disposed(by: disposeBag)
         
         // 아이템 선택 처리
         collectionView.rx.itemSelected
@@ -139,20 +155,21 @@ final class ArchiveViewController: BaseViewController {
                 // Handle selection
                 print("Selected item at \(indexPath)")
             })
-            .disposed(by: viewModel.disposeBag)
+            .disposed(by: disposeBag)
     }
     
     // MARK: - Collection View Configuration
     private func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
         return UICollectionViewCompositionalLayout { [weak self] (sectionIndex, environment) -> NSCollectionLayoutSection? in
-            // 모든 섹션은 수평 스크롤
-            let section = self?.createHorizontalSection()
-            return section
+            guard let self = self else { return nil }
+            
+            // 각 섹션별로 다른 레이아웃 적용 가능
+            return self.createHorizontalSection()
         }
     }
     
     private func createHorizontalSection() -> NSCollectionLayoutSection {
-        // 아이템 크기 정의
+        // BackdropCollectionViewCell에 맞는 아이템 크기 정의
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
             heightDimension: .fractionalHeight(1.0)
@@ -160,12 +177,12 @@ final class ArchiveViewController: BaseViewController {
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
         // 아이템 사이 간격
-        item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8)
+        item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 4)
         
-        // 그룹 크기 정의
+        // HomeViewController의 trendSectionLayout과 유사하게 설정
         let groupSize = NSCollectionLayoutSize(
-            widthDimension: .absolute(150),  // 셀 너비
-            heightDimension: .absolute(180)  // 셀 높이
+            widthDimension: .fractionalWidth(7/18),  // BackdropCollectionViewCell에 적합한 비율
+            heightDimension: .fractionalHeight(0.18)  // 화면 높이의 18%
         )
         
         // 수평 그룹 생성
@@ -173,13 +190,12 @@ final class ArchiveViewController: BaseViewController {
         
         // 섹션 정의
         let section = NSCollectionLayoutSection(group: group)
-        section.orthogonalScrollingBehavior = .continuous
-        section.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 8, bottom: 24, trailing: 8)
+        section.orthogonalScrollingBehavior = .continuous // 수평 스크롤 설정
         
         // 헤더 뷰 추가
         let headerSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .absolute(50)
+            heightDimension: .absolute(44)
         )
         let header = NSCollectionLayoutBoundarySupplementaryItem(
             layoutSize: headerSize,
@@ -189,77 +205,6 @@ final class ArchiveViewController: BaseViewController {
         section.boundarySupplementaryItems = [header]
         
         return section
-    }
-    
-    // 데이터 소스 생성
-    private func createDataSource() -> UICollectionViewDiffableDataSource<ArchiveSection, ContentModel> {
-        let dataSource = UICollectionViewDiffableDataSource<ArchiveSection, ContentModel>(
-            collectionView: collectionView
-        ) { (collectionView, indexPath, item) -> UICollectionViewCell? in
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: ArchiveContentCell.identifier,
-                for: indexPath
-            ) as? ArchiveContentCell else {
-                return UICollectionViewCell()
-            }
-            
-            // 섹션에 따라 프로그레스바 표시 여부 설정
-            let section = ArchiveSection.allCases[indexPath.section]
-            
-            switch section {
-            case .wantToWatch, .dailyComment:
-                cell.configure(with: item, showProgress: false)
-            case .watched, .watching:
-                cell.configure(with: item, showProgress: true, progress: Float.random(in: 0.1...0.9))
-            }
-            
-            return cell
-        }
-        
-        // 헤더 뷰 설정
-        dataSource.supplementaryViewProvider = { (collectionView, kind, indexPath) -> UICollectionReusableView? in
-            guard kind == UICollectionView.elementKindSectionHeader,
-                  let headerView = collectionView.dequeueReusableSupplementaryView(
-                    ofKind: kind,
-                    withReuseIdentifier: ArchiveSectionHeaderView.identifier,
-                    for: indexPath
-                  ) as? ArchiveSectionHeaderView else {
-                return nil
-            }
-            
-            let section = ArchiveSection.allCases[indexPath.section]
-            headerView.configure(with: section.title)
-            
-            return headerView
-        }
-        
-        return dataSource
-    }
-    
-    // 스냅샷 적용
-    private func applySnapshot(_ snapshot: NSDiffableDataSourceSnapshot<ArchiveSection, ContentModel>) {
-        // 메인 스레드에서 실행
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            self.dataSource.apply(snapshot, animatingDifferences: true)
-            
-            // 헤더 뷰 설정 (여기서 확인)
-            self.dataSource.supplementaryViewProvider = { (collectionView, kind, indexPath) -> UICollectionReusableView? in
-                guard kind == UICollectionView.elementKindSectionHeader,
-                      let headerView = collectionView.dequeueReusableSupplementaryView(
-                        ofKind: kind,
-                        withReuseIdentifier: ArchiveSectionHeaderView.identifier,
-                        for: indexPath
-                      ) as? ArchiveSectionHeaderView else {
-                    return nil
-                }
-                
-                let section = ArchiveSection.allCases[indexPath.section]
-                headerView.configure(with: section.title)
-                
-                return headerView
-            }
-        }
     }
     
     // MARK: - Actions

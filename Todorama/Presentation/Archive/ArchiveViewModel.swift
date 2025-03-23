@@ -8,6 +8,7 @@
 import Foundation
 import RxSwift
 import RxCocoa
+import RxDataSources
 
 // 아카이브 섹션 정의
 enum ArchiveSection: Int, CaseIterable {
@@ -46,11 +47,8 @@ struct ContentModel: Hashable {
     }
 }
 
-// 섹션 데이터 모델
-struct ArchiveSectionModel {
-    let type: ArchiveSection
-    let items: [ContentModel]
-}
+// RxDataSources와 호환되는 섹션 모델
+typealias ArchiveSectionModel = SectionModel<ArchiveSection, ContentModel>
 
 final class ArchiveViewModel: BaseViewModel {
     
@@ -94,12 +92,12 @@ final class ArchiveViewModel: BaseViewModel {
             ContentModel(title: "비상과 아수라", category: "스릴러", imageURL: "drama12")
         ]
         
-        // 섹션 모델 생성
+        // RxDataSources 형식의 섹션 모델 생성
         let sectionModels = [
-            ArchiveSectionModel(type: .wantToWatch, items: wantToWatchContents),
-            ArchiveSectionModel(type: .watched, items: watchedContents),
-            ArchiveSectionModel(type: .watching, items: watchingContents),
-            ArchiveSectionModel(type: .dailyComment, items: commentContents)
+            SectionModel<ArchiveSection, ContentModel>(model: .wantToWatch, items: wantToWatchContents),
+            SectionModel<ArchiveSection, ContentModel>(model: .watched, items: watchedContents),
+            SectionModel<ArchiveSection, ContentModel>(model: .watching, items: watchingContents),
+            SectionModel<ArchiveSection, ContentModel>(model: .dailyComment, items: commentContents)
         ]
         
         // 데이터 스트림 생성

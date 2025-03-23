@@ -84,6 +84,10 @@ final class ArchiveViewController: BaseViewController {
         
         // Navigation title
         navigationItem.title = Strings.NavTitle.archive.text
+        navigationController?.navigationBar.topItem?.backButtonTitle = "" // 화살표만 뜨도록
+        navigationController?.navigationBar.tintColor = .tdMain
+        
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
         
         // Background color
         view.backgroundColor = .black
@@ -155,23 +159,19 @@ final class ArchiveViewController: BaseViewController {
                 // 해당 셀이 갖고 있는 id로 id에 맞는 Series뷰컨으로 전환
             })
             .disposed(by: disposeBag)
-        
-        print("commentButton isUserInteractionEnabled: \(commentButton.isUserInteractionEnabled)")
-        print("rateButton isUserInteractionEnabled: \(rateButton.isUserInteractionEnabled)")
+    
         
         commentButton.rx.tap
-            .do(onNext: { _ in print("commentButton tapped") }) // 로그 추가
+            .do(onNext: { _ in  })
             .subscribe(onNext: { [weak self] _ in
-                print("Navigating to CommentViewController") // 로그 추가
                 let commentVC = CommentViewController()
                 self?.navigationController?.pushViewController(commentVC, animated: true)
             })
             .disposed(by: disposeBag)
 
         rateButton.rx.tap
-            .do(onNext: { _ in print("rateButton tapped") }) // 로그 추가
+            .do(onNext: { _ in  })
             .subscribe(onNext: { [weak self] _ in
-                print("Navigating to RateViewController") // 로그 추가
                 let rateVC = RateViewController()
                 self?.navigationController?.pushViewController(rateVC, animated: true)
             })
@@ -185,7 +185,7 @@ final class ArchiveViewController: BaseViewController {
         return UICollectionViewCompositionalLayout { [weak self] (sectionIndex, environment) -> NSCollectionLayoutSection? in
             guard let self = self else { return nil }
             
-            // 각 섹션별로 다른 레이아웃 적용 가능
+            
             return self.createHorizontalSection()
         }
     }

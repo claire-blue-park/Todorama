@@ -122,7 +122,7 @@ class HomeViewController: BaseViewController {
                 return cell
             } else if let trend = item.base as? TrendDetail {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: BackdropCollectionViewCell.identifier, for: indexPath) as! BackdropCollectionViewCell
-                cell.configure()
+                cell.configure(item: BackDrop(modelType: trend))
                 return cell
             } else if let recommendation = item.base as? RecommendationDetail {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PosterCollectionViewCell.identifier, for: indexPath) as! PosterCollectionViewCell

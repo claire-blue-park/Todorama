@@ -112,8 +112,6 @@ class HomeViewController: BaseViewController {
         return layout
     }
 
-
-
     override func bind() {
         let input = HomeViewModel.Input()
         let output = viewModel.transform(input: input)

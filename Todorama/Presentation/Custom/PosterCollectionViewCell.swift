@@ -21,6 +21,9 @@ final class PosterCollectionViewCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        configureView()
+    }
+    private func configureView() {
         stackView.axis = .vertical
         contentView.addSubview(stackView)
         stackView.addArrangedSubview(imageView)
@@ -37,10 +40,8 @@ final class PosterCollectionViewCell: UICollectionViewCell {
         }
         label.font = Fonts.textFont
         label.isHidden = true
-        imageView.clipsToBounds = true
         self.imageView.layer.cornerRadius = 8
     }
-
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

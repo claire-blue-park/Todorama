@@ -22,7 +22,7 @@ class SearchViewController: BaseViewController {
         searchBar.becomeFirstResponder()
     }
     override func bind() {
-        let input = SearchViewModel.Input(cancelButtonTapped: cancelButton.rx.tap, searchButtonTapped: searchBar.rx.searchButtonClicked.withLatestFrom(searchBar.rx.text.orEmpty))
+        let input = SearchViewModel.Input(cancelButtonTapped: cancelButton.rx.tap, searchButtonTapped: searchBar.rx.searchButtonClicked.withLatestFrom(searchBar.rx.text.orEmpty), prefetchItem: collectionView.rx.prefetchItems)
         let output = viewModel.transform(input: input)
         
         output.resignKeyboardTrigger.drive(with: self) { owner, _ in
@@ -30,6 +30,7 @@ class SearchViewController: BaseViewController {
         }.disposed(by: disposeBag)
         output.cancelButtonTapped.drive(with: self) { owner, _ in
             owner.searchBar.text = ""
+            owner.view.endEditing(true)
         }.disposed(by: disposeBag)
         let dataSource = RxCollectionViewSectionedReloadDataSource<SectionModel<String, AnyHashable>>( configureCell: { dataSource, collectionView, indexPath, item in
             if let popular = item.base as? PopularDetail {

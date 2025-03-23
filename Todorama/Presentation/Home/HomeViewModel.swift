@@ -77,11 +77,11 @@ class HomeViewModel: BaseViewModel {
                             if let error = error as? NetworkError {
                                 self?.internalData.errorMessageTrigger.onNext((error, isConnected))
                             }
-                            return Observable.just(Popular(results: []))
+                            return Observable.just(Popular(results: [], total_pages: 1, page: 1))
                         }
                 } else {
                     self?.internalData.errorMessageTrigger.onNext((.networkError, isConnected))
-                    return Observable.just(Popular(results: []))
+                    return Observable.just(Popular(results: [], total_pages: 1, page: 1))
                 }
             }
             .subscribe(with: self) { owner, popular in

@@ -16,6 +16,7 @@ final class SearchViewModel: BaseViewModel {
     struct Input {
         let cancelButtonTapped: ControlEvent<Void>
         let searchButtonTapped: Observable<ControlProperty<String>.Element>
+        let prefetchItem : ControlEvent<[IndexPath]>
     }
     struct Output {
         let sections: Observable<[SectionModel<String, AnyHashable>]>
@@ -24,10 +25,14 @@ final class SearchViewModel: BaseViewModel {
         let resignKeyboardTrigger: Driver<Void>
     }
     struct InternalData {
-        let searchData = PublishSubject<[PopularDetail]>()
+        let searchData = BehaviorSubject<[PopularDetail]>(value: [PopularDetail]())
         let errorMessageTrigger = PublishSubject<(NetworkError, Bool)>()
         let query = BehaviorSubject<String>(value: "")
         let networkStatus : Observable<Bool>
+
+        var total = 0
+        var page = 1
+        var isEnd = false
     }
     init() {
         internalData = InternalData(networkStatus: NetworkMonitor.shared.currentStatus)
@@ -43,33 +48,57 @@ final class SearchViewModel: BaseViewModel {
         
         input.searchButtonTapped.bind(to: internalData.query).disposed(by: disposeBag)
         internalData.query.bind(with: self) { owner, query in
-            owner.getSearchData()
+            owner.internalData.page = 1
+            owner.internalData.isEnd = false
+            owner.getSearchData(page: owner.internalData.page)
         }.disposed(by: disposeBag)
+        
+        input.prefetchItem
+            .bind(with: self) { owner, indexPaths in
+                guard let oldData = try? owner.internalData.searchData.value() else {return}
+                for idx in indexPaths {
+                    if oldData.count - 2 <= idx.item && owner.internalData.isEnd == false {
+                        owner.internalData.page += 1
+                        owner.getSearchData(page: owner.internalData.page)
+                    }
+                }
+            }.disposed(by: disposeBag)
         
         return Output(sections: sectionData, cancelButtonTapped: input.cancelButtonTapped.asDriver(), errorMessage: internalData.errorMessageTrigger.asDriver(onErrorJustReturn: (.customError(code: 000, message: "알수없는 에러"), false)), resignKeyboardTrigger: resignKeyboardTrigger)
     }
-    private func getSearchData() {
+    private func getSearchData(page: Int) {
         guard let query = try? internalData.query.value() else {return}
         NetworkMonitor.shared.startNetworkMonitor()
         internalData.networkStatus.take(1)
             .flatMap{[weak self] isConnected in
+                guard let self = self else {
+                    return Observable.just(Popular(results: [], total_pages: 1, page: 1))
+                }
                 if isConnected {
-                    return NetworkManager.shared.callRequest(target: .search(query: query, page: 1), model: Popular.self)
+                    return NetworkManager.shared.callRequest(target: .search(query: query, page: page), model: Popular.self)
                         .catch { error in
                             if let error = error as? NetworkError {
-                                self?.internalData.errorMessageTrigger.onNext((error, isConnected))
+                                self.internalData.errorMessageTrigger.onNext((error, isConnected))
                             }
-                            return Observable.just(Popular(results: []))
+                            return Observable.just(Popular(results: [], total_pages: 1, page: 1))
                         }
                 } else {
-                    self?.internalData.errorMessageTrigger.onNext((.networkError, isConnected))
-                    return Observable.just(Popular(results: []))
+                    self.internalData.errorMessageTrigger.onNext((.networkError, isConnected))
+                    return Observable.just(Popular(results: [], total_pages: 1, page: 1))
                 }
             }
             .subscribe(with: self) { owner, popular in
-                let popularDetail = popular.results
-
-                owner.internalData.searchData.onNext(popularDetail)
+                if owner.internalData.page > popular.total_pages {
+                    owner.internalData.isEnd = true
+                    return
+                }
+                guard var oldData = try? owner.internalData.searchData.value() else {return}
+                if owner.internalData.page == 1 {
+                    oldData = popular.results
+                } else {
+                    oldData.append(contentsOf: popular.results)
+                }
+                owner.internalData.searchData.onNext(oldData)
                 NetworkMonitor.shared.stopNetworkMonitor()
             } onError: { _, error in
                 print("search error", error)

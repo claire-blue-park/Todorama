@@ -34,11 +34,12 @@ final class TabBarController: UITabBarController {
         
         // 네비게이션 컨트롤러 구성
         
-        
+        let homeNav = UINavigationController(rootViewController: homeVC)
+        let searchNav = UINavigationController(rootViewController: searchVC)
         let archiveNav = UINavigationController(rootViewController: archiveVC)
         
         // 탭바 컨트롤러에 뷰 컨트롤러 설정
-        setViewControllers([homeVC, searchVC, archiveNav], animated: true)
+        setViewControllers([homeNav, searchNav, archiveNav], animated: true)
     }
     
     func setupTabBarAppearance() {

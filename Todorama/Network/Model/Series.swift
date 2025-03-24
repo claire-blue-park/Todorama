@@ -33,7 +33,7 @@ struct Network: Decodable {
 
 struct Season: Decodable {
     let id: Int
-    let air_date: String
+    let air_date: String?
     let episode_count: Int
     let name: String
     let overview: String

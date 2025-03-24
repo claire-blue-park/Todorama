@@ -143,7 +143,8 @@ class HomeViewController: BaseViewController {
             .bind(with: self) { owner, model in
                 if let model = model as? IdentifiableModel {
                     let id = model.id
-                    // push seriesVC
+                    let vc = SeriesViewController(id: id)
+                    owner.navigationController?.pushViewController(vc, animated: true)
                 }
             }.disposed(by: disposeBag)
     }

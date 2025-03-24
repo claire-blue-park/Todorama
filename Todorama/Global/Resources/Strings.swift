@@ -36,6 +36,8 @@ enum Strings {
         case season
         case episode
         case air
+        case none // 추가
+        case empty  // 추가
         
         var text: String {
             switch self {
@@ -57,6 +59,10 @@ enum Strings {
                 "에피소드"
             case .air:
                 "방영"
+            case .none: // 추가
+                "none"
+            case .empty: // 추가
+                ""
             }
         }
     }

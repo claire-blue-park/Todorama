@@ -17,7 +17,7 @@ final class CommentViewController: BaseViewController {
     private let disposeBag = DisposeBag()
     
     // 현재 검색어를 저장하는 프로퍼티
-    private var currentSearchQuery = BehaviorRelay<String>(value: "")
+    private var currentSearchQuery = BehaviorRelay<String>(value: Strings.Global.empty.text)
     
     // MARK: - UI Components
     private let searchContainerView = UIView()
@@ -193,8 +193,8 @@ final class CommentViewController: BaseViewController {
         // 취소 버튼 탭 처리
         output.clearSearchText
             .drive(onNext: { [weak self] _ in
-                self?.searchBar.text = ""
-                self?.currentSearchQuery.accept("")
+                self?.searchBar.text = Strings.Global.empty.text
+                self?.currentSearchQuery.accept(Strings.Global.empty.text)
                 self?.searchBar.resignFirstResponder()
             })
             .disposed(by: disposeBag)

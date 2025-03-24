@@ -10,6 +10,7 @@ import Kingfisher
 import RxCocoa
 import RxSwift
 import SnapKit
+import WebKit
 
 final class SeriesViewController: BaseViewController {
     private let disposeBag = DisposeBag()
@@ -22,7 +23,8 @@ final class SeriesViewController: BaseViewController {
     private let infoLabel = UILabel()
     private let synopsisLabel = UILabel()
     private let infoSectionTitle = SectionTitleView(title: Strings.SectionTitle.seriesInfo.text)
-    private let linkButton = UIButton()
+    
+    private let networkButtonView = NetworkButtonView()
     
     private lazy var seriesCollectionView = UICollectionView(frame: .zero, collectionViewLayout: createRelatedSeriesLayout())
     
@@ -48,17 +50,28 @@ final class SeriesViewController: BaseViewController {
         output.result
             .asDriver(onErrorJustReturn: defaultSeries)
             .drive(with: self, onNext: { owner, series in
-                owner.loadData(with: series)
+                owner.dramaTitleLabel.text = series.name
+                let genreId = series.genres.first?.id ?? 0
+                let genreKo = GenreManager.shared.getGenre(genreId)
+                owner.infoLabel.text = "\(Strings.Global.season.text) \(series.number_of_seasons)\(Strings.Unit.count.text) · \(series.status) · \(genreKo)"
+                owner.synopsisLabel.text = series.overview
+                if let backdropPath = series.backdrop_path {
+                    owner.backdropView.kf.setImage(with: URL(string: ImageSize.backdrop780(url: backdropPath).fullUrl))
+                }
                 
-                Observable.just(series.seasons)
-                    .asDriver(onErrorJustReturn: [])
-                    .drive(owner.seriesCollectionView.rx.items(
-                        cellIdentifier: SeriesCollectionViewCell.identifier,
-                        cellType: SeriesCollectionViewCell.self)) {(row, element, cell) in
-                            cell.bindData(with: element)
-                        }
-                        .disposed(by: owner.disposeBag)
+                // 네트워크 버튼 업데이트
+                if let network = series.networks.first {
+                    owner.networkButtonView.configure(with: network)
+                }
             })
+            .disposed(by: disposeBag)
+        
+        output.result
+            .map { $0.seasons }
+            .asDriver(onErrorJustReturn: [])
+            .drive(seriesCollectionView.rx.items(cellIdentifier: SeriesCollectionViewCell.identifier, cellType: SeriesCollectionViewCell.self)) { row, season, cell in
+                cell.bindData(with: season)
+            }
             .disposed(by: disposeBag)
         
         seriesCollectionView.rx.itemSelected
@@ -72,6 +85,48 @@ final class SeriesViewController: BaseViewController {
                 self?.navigationController?.pushViewController(controller, animated: true)
             })
             .disposed(by: disposeBag)
+        
+        output.homepage
+            .asDriver(onErrorJustReturn: "https://www.google.com")
+            .drive(with: self, onNext: { owner, homepage in
+                owner.networkButtonView.onTap = {
+                    owner.presentWebView(with: homepage)
+                }
+            })
+            .disposed(by: disposeBag)
+    }
+    
+    private func presentWebView(with urlString: String) {
+        guard let url = URL(string: urlString), !urlString.isEmpty else {
+            print("Invalid URL: \(urlString)")
+            return
+        }
+        
+        let webView = WKWebView()
+        let webViewController = UIViewController()
+        webViewController.view = webView
+        webView.load(URLRequest(url: url))
+        
+        let navController = UINavigationController(rootViewController: webViewController)
+        webViewController.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(dismissWebView))
+        present(navController, animated: true, completion: nil)
+    }
+    @objc private func dismissWebView() {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    private func createRelatedSeriesLayout() -> UICollectionViewLayout {
+        return UICollectionViewCompositionalLayout { _, _ in
+            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1))
+            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.4), heightDimension: .fractionalHeight(1))
+            let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, repeatingSubitem: item, count: 1)
+            let section = NSCollectionLayoutSection(group: group)
+            section.orthogonalScrollingBehavior = .continuous
+            section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12)
+            section.interGroupSpacing = 8
+            return section
+        }
     }
     
     private func loadData(with series: Series) {
@@ -79,7 +134,7 @@ final class SeriesViewController: BaseViewController {
             backdropView.kf.setImage(with: URL(string: ImageSize.backdrop780(url: image).fullUrl))
         }
         dramaTitleLabel.text = series.name
-
+        
         let genreId = series.genres.first?.id ?? 00
         let genreKo = GenreManager.shared.getGenre(genreId)
         infoLabel.text = "\(Strings.Global.season.text) \(series.number_of_seasons)\(Strings.Unit.count.text) · \(series.status) · \(genreKo)"
@@ -91,7 +146,7 @@ final class SeriesViewController: BaseViewController {
     override func configureHierarchy() {
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
-        [backdropView, dramaTitleLabel, infoLabel, synopsisLabel, linkButton, infoSectionTitle, seriesCollectionView].forEach { item in
+        [backdropView, dramaTitleLabel, infoLabel, synopsisLabel, networkButtonView, infoSectionTitle, seriesCollectionView].forEach { item in
             contentView.addSubview(item)
         }
     }
@@ -127,15 +182,15 @@ final class SeriesViewController: BaseViewController {
             make.horizontalEdges.equalTo(dramaTitleLabel.snp.horizontalEdges)
         }
         
-        linkButton.snp.makeConstraints { make in
+        networkButtonView.snp.makeConstraints { make in
             make.top.equalTo(synopsisLabel.snp.bottom).offset(20)
-            make.trailing.equalToSuperview().inset(12)
-            make.height.equalTo(20)
+            make.horizontalEdges.equalToSuperview().inset(12)
+            make.height.equalTo(40)
         }
         
         infoSectionTitle.snp.makeConstraints { make in
             make.height.equalTo(44)
-            make.top.equalTo(linkButton.snp.bottom).offset(20)
+            make.top.equalTo(networkButtonView.snp.bottom).offset(20)
             make.leading.equalToSuperview()
         }
         
@@ -162,30 +217,10 @@ final class SeriesViewController: BaseViewController {
         synopsisLabel.textStyle()
         synopsisLabel.numberOfLines = 0
         
-        linkButton.setTitle("보러가기", for: .normal)
-        linkButton.titleLabel?.textStyle()
         
         seriesCollectionView.backgroundColor = .clear
         seriesCollectionView.showsHorizontalScrollIndicator = false
         seriesCollectionView.register(SeriesCollectionViewCell.self, forCellWithReuseIdentifier: "SeriesCollectionViewCell")
     }
     
-    private func createRelatedSeriesLayout() -> UICollectionViewLayout {
-        return UICollectionViewCompositionalLayout { _, _ in
-            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
-                                                  heightDimension: .fractionalHeight(1))
-            let item = NSCollectionLayoutItem(layoutSize: itemSize)
-            
-            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.4),
-                                                   heightDimension: .fractionalHeight(1))
-            let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, repeatingSubitem: item, count: 1)
-            
-            let section = NSCollectionLayoutSection(group: group)
-            section.orthogonalScrollingBehavior = .continuous
-            section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12)
-            section.interGroupSpacing = 8
-            
-            return section
-        }
-    }
 }

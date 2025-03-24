@@ -12,5 +12,6 @@ struct Recommendation: Decodable, Hashable {
 }
 struct RecommendationDetail: Decodable, Hashable, IdentifiableModel {
     let id: Int
+    let name: String?
     let poster_path: String?
 }

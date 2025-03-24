@@ -13,6 +13,7 @@ struct Popular: Decodable, Hashable {
 }
 struct PopularDetail: Decodable, Hashable, IdentifiableModel {
     let id: Int
+    let name: String? // If PosterPath doens't exist show name for title label!
     let poster_path: String?
 }
 

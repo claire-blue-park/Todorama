@@ -27,15 +27,15 @@ class HomeViewController: BaseViewController {
     }
     override func configureLayout() {
         scrollView.snp.makeConstraints { make in
-            make.edges.equalTo(view.safeAreaLayoutGuide)
+            make.edges.bottom.equalTo(view.safeAreaLayoutGuide)
         }
         collectionView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(-44)
-            make.bottom.equalTo(view.safeAreaLayoutGuide)
+            make.verticalEdges.equalTo(view.safeAreaLayoutGuide)
             make.width.equalTo(scrollView)
         }
     }
     override func configureView() {
+        navigationController?.navigationBar.isHidden = true
         collectionView.register(PosterCollectionViewCell.self, forCellWithReuseIdentifier: PosterCollectionViewCell.identifier)
         collectionView.register(BackdropCollectionViewCell.self, forCellWithReuseIdentifier: BackdropCollectionViewCell.identifier)
 
@@ -94,7 +94,7 @@ class HomeViewController: BaseViewController {
         return section
     }
     private func createSectionHeader() -> NSCollectionLayoutBoundarySupplementaryItem {
-        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(44))
+        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(50))
         let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize, elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
         return header
     }
@@ -118,7 +118,7 @@ class HomeViewController: BaseViewController {
         let dataSource = RxCollectionViewSectionedReloadDataSource<SectionModel<String, AnyHashable>>( configureCell: { dataSource, collectionView, indexPath, item in
             if let popular = item.base as? PopularDetail {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PosterCollectionViewCell.identifier, for: indexPath) as! PosterCollectionViewCell
-                cell.configure(with: popular.poster_path)
+                cell.configure(with: popular.poster_path, title: popular.name)
                 return cell
             } else if let trend = item.base as? TrendDetail {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: BackdropCollectionViewCell.identifier, for: indexPath) as! BackdropCollectionViewCell
@@ -126,13 +126,18 @@ class HomeViewController: BaseViewController {
                 return cell
             } else if let recommendation = item.base as? RecommendationDetail {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PosterCollectionViewCell.identifier, for: indexPath) as! PosterCollectionViewCell
-                cell.configure(with: recommendation.poster_path)
+                cell.configure(with: recommendation.poster_path, title: recommendation.name)
                 return cell
             }
             return UICollectionViewCell()
         }, configureSupplementaryView: { dataSource, collectionView, kind, indexPath in
             let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: SectionHeaderView.reuseIdentifier, for: indexPath) as! SectionHeaderView
-            header.configure(with: dataSource.sectionModels[indexPath.section].model)
+            if indexPath.section == 0 {
+                header.isHidden = true
+            } else {
+                header.isHidden = false
+                header.configure(with: dataSource.sectionModels[indexPath.section].model)
+            }
             return header
         })
         

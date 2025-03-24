@@ -9,6 +9,23 @@ import Foundation
 
 enum Strings {
     
+    enum Unit {
+        case count
+        case minute
+        case epi
+        
+        var text: String {
+            switch self {
+            case .count:
+                "개"
+            case .minute:
+                "분"
+            case .epi:
+                "화"
+            }
+        }
+    }
+    
     enum Global {
         case cancel
         case wantToWatch
@@ -17,8 +34,8 @@ enum Strings {
         case comment
         case rate
         case season
-        case countUnit
         case episode
+        case air
         
         var text: String {
             switch self {
@@ -36,10 +53,10 @@ enum Strings {
                 "별점"
             case .season:
                 "시즌"
-            case .countUnit:
-                "개"
             case .episode:
                 "에피소드"
+            case .air:
+                "방영"
             }
         }
     }

@@ -15,15 +15,17 @@ final class SeriesViewController: BaseViewController {
     private let disposeBag = DisposeBag()
     private var viewModel: SeriesViewModel
     
-    // MARK: - 뷰 컴포넌트
+    private let scrollView = UIScrollView()
+    private let contentView = UIView()
     private let backdropView = UIImageView()
     private let dramaTitleLabel = UILabel()
     private let infoLabel = UILabel()
     private let synopsisLabel = UILabel()
     private let infoSectionTitle = SectionTitleView(title: Strings.SectionTitle.seriesInfo.text)
-    private lazy var seriesCollectionView = UICollectionView(frame: .zero, collectionViewLayout: createRelatedSeriesLayout())
-    private let linkButton = UIButton() // 이미지로 변경?
+    private let linkButton = UIButton()
     
+    private lazy var seriesCollectionView = UICollectionView(frame: .zero, collectionViewLayout: createRelatedSeriesLayout())
+
     init(id: Int) {
         self.viewModel = SeriesViewModel(id: id)
         super.init(nibName: nil, bundle: nil)
@@ -35,7 +37,6 @@ final class SeriesViewController: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
     }
     
     override func bind() {
@@ -49,7 +50,6 @@ final class SeriesViewController: BaseViewController {
              .drive(with: self, onNext: { owner, series in
                  owner.loadData(with: series)
                  
-                 // 시즌 방출 -> 컬렉션 뷰
                  Observable.just(series.seasons)
                      .asDriver(onErrorJustReturn: [])
                      .drive(owner.seriesCollectionView.rx.items(
@@ -60,25 +60,6 @@ final class SeriesViewController: BaseViewController {
                      .disposed(by: owner.disposeBag)
              })
              .disposed(by: disposeBag)
-        
-//        output.result
-//            .asDriver(onErrorJustReturn: defaultSeries)
-//            .drive(with: self, onNext: { owner, series in
-//                owner.loadData(with: series)
-//            })
-//            .disposed(by: disposeBag)
-//        
-//        output.result
-//            .map { $0.seasons }
-//            .asDriver(onErrorJustReturn: [])
-//            .drive(seriesCollectionView.rx.items(
-//                cellIdentifier: SeriesCollectionViewCell.identifier,
-//                cellType: SeriesCollectionViewCell.self)) {(row, element, cell) in
-//
-//                cell.bindData(with: element)
-//            }
-//            .disposed(by: disposeBag)
-
     }
     
     private func loadData(with series: Series) {
@@ -93,14 +74,25 @@ final class SeriesViewController: BaseViewController {
     }
     
     override func configureHierarchy() {
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
         [backdropView, dramaTitleLabel, infoLabel, synopsisLabel, linkButton, infoSectionTitle, seriesCollectionView].forEach { item in
-            view.addSubview(item)
+            contentView.addSubview(item)
         }
     }
     
     override func configureLayout() {
+        scrollView.snp.makeConstraints { make in
+            make.edges.equalTo(view.safeAreaLayoutGuide)
+        }
+        
+        contentView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+            make.width.equalTo(scrollView)
+        }
+        
         backdropView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide)
+            make.top.equalToSuperview()
             make.horizontalEdges.equalToSuperview()
             make.height.equalTo(240)
         }
@@ -127,6 +119,7 @@ final class SeriesViewController: BaseViewController {
         }
         
         infoSectionTitle.snp.makeConstraints { make in
+            make.height.equalTo(44)
             make.top.equalTo(linkButton.snp.bottom).offset(20)
             make.leading.equalToSuperview()
         }
@@ -134,12 +127,15 @@ final class SeriesViewController: BaseViewController {
         seriesCollectionView.snp.makeConstraints { make in
             make.top.equalTo(infoSectionTitle.snp.bottom).offset(12)
             make.horizontalEdges.equalToSuperview()
-            make.bottom.equalTo(view.safeAreaLayoutGuide)
+            make.height.equalTo(280)
+            make.bottom.equalToSuperview().offset(-20)
         }
     }
     
     override func configureView() {
         view.backgroundColor = .black
+        
+        scrollView.alwaysBounceVertical = true
         
         backdropView.contentMode = .scaleAspectFill
         backdropView.clipsToBounds = true
@@ -161,7 +157,6 @@ final class SeriesViewController: BaseViewController {
     
     private func createRelatedSeriesLayout() -> UICollectionViewLayout {
         return UICollectionViewCompositionalLayout { _, _ in
-        
             let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
                                                   heightDimension: .fractionalHeight(1))
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
@@ -178,6 +173,4 @@ final class SeriesViewController: BaseViewController {
             return section
         }
     }
-    
-  
 }

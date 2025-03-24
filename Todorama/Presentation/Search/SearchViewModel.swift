@@ -16,13 +16,14 @@ final class SearchViewModel: BaseViewModel {
     struct Input {
         let cancelButtonTapped: ControlEvent<Void>
         let searchButtonTapped: Observable<ControlProperty<String>.Element>
-        let prefetchItem : ControlEvent<[IndexPath]>
+        let scrollTrigger: Observable<Void>
     }
     struct Output {
         let sections: Observable<[SectionModel<String, AnyHashable>]>
         let cancelButtonTapped: Driver<Void>
         let errorMessage : Driver<(NetworkError, Bool)>
         let resignKeyboardTrigger: Driver<Void>
+        let testData: Observable<[PopularDetail]>
     }
     struct InternalData {
         let searchData = BehaviorSubject<[PopularDetail]>(value: [PopularDetail]())
@@ -38,6 +39,7 @@ final class SearchViewModel: BaseViewModel {
         internalData = InternalData(networkStatus: NetworkMonitor.shared.currentStatus)
     }
     func transform(input: Input) -> Output {
+        let testData = internalData.searchData.asObserver()
         let sectionData = internalData.searchData
             .map { popularList in
                 [SectionModel(model: Strings.Global.empty.text, items: popularList.map { AnyHashable($0) })]
@@ -48,7 +50,6 @@ final class SearchViewModel: BaseViewModel {
         
         input.searchButtonTapped.bind(with: self) { owner, newText in
             guard let oldText = try? owner.internalData.query.value(), oldText != newText else {return}
-            print(oldText, newText)
             owner.internalData.query.onNext(newText)
         }.disposed(by: disposeBag)
         
@@ -57,19 +58,16 @@ final class SearchViewModel: BaseViewModel {
             owner.internalData.isEnd = false
             owner.getSearchData(page: owner.internalData.page)
         }.disposed(by: disposeBag)
-        
-        input.prefetchItem
-            .bind(with: self) { owner, indexPaths in
-                guard let oldData = try? owner.internalData.searchData.value() else {return}
-                for idx in indexPaths {
-                    if oldData.count - 2 <= idx.item && owner.internalData.isEnd == false {
-                        owner.internalData.page += 1
-                        owner.getSearchData(page: owner.internalData.page)
-                    }
+
+        input.scrollTrigger
+            .bind(with: self) { owner, _ in
+                if owner.internalData.isEnd == false {
+                    owner.internalData.page += 1
+                    owner.getSearchData(page: owner.internalData.page)
                 }
-            }.disposed(by: disposeBag)
-        
-        return Output(sections: sectionData, cancelButtonTapped: input.cancelButtonTapped.asDriver(), errorMessage: internalData.errorMessageTrigger.asDriver(onErrorJustReturn: (.customError(code: 000, message: "알수없는 에러"), false)), resignKeyboardTrigger: resignKeyboardTrigger)
+            }
+            .disposed(by: disposeBag)
+        return Output(sections: sectionData, cancelButtonTapped: input.cancelButtonTapped.asDriver(), errorMessage: internalData.errorMessageTrigger.asDriver(onErrorJustReturn: (.customError(code: 000, message: "알수없는 에러"), false)), resignKeyboardTrigger: resignKeyboardTrigger, testData: testData)
     }
     private func getSearchData(page: Int) {
         guard let query = try? internalData.query.value() else {return}

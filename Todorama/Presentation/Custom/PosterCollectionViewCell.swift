@@ -24,6 +24,13 @@ final class PosterCollectionViewCell: UICollectionViewCell {
         super.init(frame: frame)
         configureView()
     }
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        print(#function)
+        imageView.image = nil
+        label.text = nil
+        emptyLabel.text = nil
+    }
     private func configureView() {
         stackView.axis = .vertical
         contentView.addSubview(stackView)
@@ -56,7 +63,7 @@ final class PosterCollectionViewCell: UICollectionViewCell {
     }
 
     func configure(with imageName: String?,title: String?, rate: Double? = nil) {
-        if let imageName  {
+        if let imageName {
             let imageBase = "https://image.tmdb.org/t/p/w500"
             let url = URL(string: imageBase + imageName)
             imageView.kf.setImage(with: url)

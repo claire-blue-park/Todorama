@@ -71,16 +71,18 @@ class RateViewController: BaseViewController {
         sortButton.setAttributedTitle(NSAttributedString(string: newTitle, attributes: [.font : Fonts.sectionTitleFont]), for: .normal)
     }
     override func bind() {
-        let input = RateViewModel.Input(sortButtonTapped: sortButton.rx.tap)
+        let sortButtonTapped = sortButton.rx.tap.map{[weak self] _ in self?.sortButton.isSelected}
+        
+        let input = RateViewModel.Input(sortButtonTapped: sortButtonTapped)
         let output = viewModel.transform(input: input)
+        
         output.sortChanged.drive(with: self) { owner, _ in
             owner.sortButtonChanged()
         }.disposed(by: disposeBag)
         
         let dataSource = RxCollectionViewSectionedReloadDataSource<SectionModel<String, AnyHashable>>( configureCell: { dataSource, collectionView, indexPath, item in
-            if let popular = item.base as? PopularDetail {
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PosterCollectionViewCell.identifier, for: indexPath) as! PosterCollectionViewCell
-                cell.configure(with: "star", rate: 4.4)
+            if let rating = item.base as? Rating {                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PosterCollectionViewCell.identifier, for: indexPath) as! PosterCollectionViewCell
+                cell.configure(with: nil, rate: rating.rate)
                 return cell
             }
             return UICollectionViewCell()

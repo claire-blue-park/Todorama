@@ -68,7 +68,7 @@ final class SeriesCollectionViewCell: UICollectionViewCell {
     
     func bindData(with season: Season) {
         titleLabel.text = season.name
-        episodeCountLabel.text = "\(season.episode_count)\(Strings.Global.countUnit.text) \(Strings.Global.episode.text)"
+        episodeCountLabel.text = "\(season.episode_count)\(Strings.Unit.count.text) \(Strings.Global.episode.text)"
         
         if let image = season.poster_path {
             posterImageView.kf.setImage(with: URL(string: ImageSize.poster154(url: image).fullUrl))

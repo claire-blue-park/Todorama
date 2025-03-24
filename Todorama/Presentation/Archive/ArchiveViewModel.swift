@@ -33,8 +33,8 @@ enum ArchiveSection: Int, CaseIterable {
 }
 
 // 컨텐츠 모델
-struct ContentModel: Hashable, BackDropModel {
-    let id = UUID()
+struct ContentModel: Hashable, BackDropModel, IdentifiableModel {
+    let id: Int  // TMDB API에서 사용하는 드라마/영화 ID
     let title: String
     let category: String
     let imageURL: String
@@ -55,7 +55,7 @@ struct ContentModel: Hashable, BackDropModel {
         }
         
         // 일치하는 장르가 없으면 기본값(드라마: 18) 반환
-        return [18]
+        return [00]
     }
     var backdrop_path: String? { return imageURL }
     
@@ -76,12 +76,22 @@ final class ArchiveViewModel: BaseViewModel {
     let disposeBag = DisposeBag()
     private let repository = DatabaseRepository()
     
+    // 섹션별 카운트 값을 저장할 BehaviorRelay
+    private let wishListCount = BehaviorRelay<Int>(value: 0)
+    private let watchingCount = BehaviorRelay<Int>(value: 0)
+    private let watchedCount = BehaviorRelay<Int>(value: 0)
+    private let commentCount = BehaviorRelay<Int>(value: 0)
+    
     struct Input {
         let viewDidLoad: Observable<Void>
     }
     
     struct Output {
         let sections: Driver<[ArchiveSectionModel]>
+        let wishListCount: Driver<Int>
+        let watchingCount: Driver<Int>
+        let watchedCount: Driver<Int>
+        let commentCount: Driver<Int>
     }
     
     func transform(input: Input) -> Output {
@@ -107,6 +117,27 @@ final class ArchiveViewModel: BaseViewModel {
             return self.fetchCommentItems()
         }
         
+        // 각 항목의 카운트 업데이트
+        wishListItems
+            .map { $0.count }
+            .bind(to: wishListCount)
+            .disposed(by: disposeBag)
+        
+        watchedItems
+            .map { $0.count }
+            .bind(to: watchedCount)
+            .disposed(by: disposeBag)
+        
+        watchingItems
+            .map { $0.count }
+            .bind(to: watchingCount)
+            .disposed(by: disposeBag)
+            
+        commentItems
+            .map { $0.count }
+            .bind(to: commentCount)
+            .disposed(by: disposeBag)
+        
         // 섹션 데이터 결합
         let sectionModels = Observable.combineLatest(
             wishListItems, watchedItems, watchingItems, commentItems
@@ -119,7 +150,13 @@ final class ArchiveViewModel: BaseViewModel {
             ]
         }.asDriver(onErrorJustReturn: [])
         
-        return Output(sections: sectionModels)
+        return Output(
+            sections: sectionModels,
+            wishListCount: wishListCount.asDriver(),
+            watchingCount: watchingCount.asDriver(),
+            watchedCount: watchedCount.asDriver(),
+            commentCount: commentCount.asDriver()
+        )
     }
     
     // WishList 항목 가져오기
@@ -131,6 +168,7 @@ final class ArchiveViewModel: BaseViewModel {
         for item in wishListItems {
             if let drama = item.drama {
                 contentModels.append(ContentModel(
+                    id: drama.dramaId,
                     title: drama.name,
                     category: GenreManager.shared.getGenre(drama.genre) ?? "",
                     imageURL: drama.backdropPath,
@@ -139,12 +177,12 @@ final class ArchiveViewModel: BaseViewModel {
             }
         }
         
-        // 데이터가 없으면 목 데이터 반환
+        // 데이터가 없으면 목 데이터 반환 - 실제 TMDB ID 사용
         if contentModels.isEmpty {
             contentModels = [
-                ContentModel(title: "복덕 속 김수덕", category: "드라마", imageURL: "/qwertyuiop", progress: 0.0),
-                ContentModel(title: "검성의 기록", category: "액션", imageURL: "/asdfghjkl", progress: 0.0),
-                ContentModel(title: "눈트레이", category: "판타지", imageURL: "/zxcvbnm", progress: 0.0)
+                ContentModel(id: 84958, title: "복덕 속 김수덕", category: "드라마", imageURL: "/qwertyuiop", progress: 0.0),
+                ContentModel(id: 71446, title: "검성의 기록", category: "액션", imageURL: "/asdfghjkl", progress: 0.0),
+                ContentModel(id: 76669, title: "눈트레이", category: "판타지", imageURL: "/zxcvbnm", progress: 0.0)
             ]
         }
         
@@ -159,6 +197,7 @@ final class ArchiveViewModel: BaseViewModel {
         for item in watchedItems {
             if let drama = item.drama {
                 contentModels.append(ContentModel(
+                    id: drama.dramaId,
                     title: drama.name,
                     category: GenreManager.shared.getGenre(drama.genre) ?? "",
                     imageURL: drama.backdropPath,
@@ -167,12 +206,12 @@ final class ArchiveViewModel: BaseViewModel {
             }
         }
         
-        // 데이터가 없으면 목 데이터 반환
+        // 데이터가 없으면 목 데이터 반환 - 실제 TMDB ID 사용
         if contentModels.isEmpty {
             contentModels = [
-                ContentModel(title: "먼데서 김부무", category: "로맨스", imageURL: "/poiuyt", progress: 1.0),
-                ContentModel(title: "멸렐보라 공주의 궁전", category: "사극", imageURL: "/lkjhg", progress: 1.0),
-                ContentModel(title: "새그럼 가든", category: "로맨스", imageURL: "/mnbvc", progress: 1.0)
+                ContentModel(id: 63174, title: "먼데서 김부무", category: "로맨스", imageURL: "/poiuyt", progress: 1.0),
+                ContentModel(id: 90462, title: "멸렐보라 공주의 궁전", category: "사극", imageURL: "/lkjhg", progress: 1.0),
+                ContentModel(id: 79242, title: "새그럼 가든", category: "로맨스", imageURL: "/mnbvc", progress: 1.0)
             ]
         }
         
@@ -190,6 +229,7 @@ final class ArchiveViewModel: BaseViewModel {
                 let progress = Float(item.episodeIds.count) / Float(item.episodeCount)
                 
                 contentModels.append(ContentModel(
+                    id: drama.dramaId,
                     title: drama.name,
                     category: GenreManager.shared.getGenre(drama.genre) ?? "",
                     imageURL: drama.backdropPath,
@@ -198,12 +238,12 @@ final class ArchiveViewModel: BaseViewModel {
             }
         }
         
-        // 데이터가 없으면 목 데이터 반환
+        // 데이터가 없으면 목 데이터 반환 - 실제 TMDB ID 사용
         if contentModels.isEmpty {
             contentModels = [
-                ContentModel(title: "별편 숲", category: "드라마", imageURL: "/xswdc", progress: 0.3),
-                ContentModel(title: "스타디움", category: "드라마", imageURL: "/vfrtg", progress: 0.7),
-                ContentModel(title: "스타디움 스콜피어", category: "드라마", imageURL: "/bnhyu", progress: 0.5)
+                ContentModel(id: 66732, title: "별편 숲", category: "드라마", imageURL: "/xswdc", progress: 0.3),
+                ContentModel(id: 1396, title: "스타디움", category: "드라마", imageURL: "/vfrtg", progress: 0.7),  // 브레이킹 배드 실제 ID
+                ContentModel(id: 92783, title: "스타디움 스콜피어", category: "드라마", imageURL: "/bnhyu", progress: 0.5)
             ]
         }
         
@@ -218,6 +258,7 @@ final class ArchiveViewModel: BaseViewModel {
         for item in commentItems {
             if let drama = item.drama {
                 contentModels.append(ContentModel(
+                    id: drama.dramaId,
                     title: drama.name,
                     category: GenreManager.shared.getGenre(drama.genre) ?? "",
                     imageURL: drama.backdropPath,
@@ -226,12 +267,12 @@ final class ArchiveViewModel: BaseViewModel {
             }
         }
         
-        // 데이터가 없으면 목 데이터 반환
+        // 데이터가 없으면 목 데이터 반환 - 실제 TMDB ID 사용
         if contentModels.isEmpty {
             contentModels = [
-                ContentModel(title: "낭만궁사", category: "드라마", imageURL: "/okmijn", progress: 0.0),
-                ContentModel(title: "최후의 심판", category: "액션", imageURL: "/plokij", progress: 0.0),
-                ContentModel(title: "비상과 아수라", category: "스릴러", imageURL: "/uhbygv", progress: 0.0)
+                ContentModel(id: 93405, title: "낭만궁사", category: "드라마", imageURL: "/okmijn", progress: 0.0),
+                ContentModel(id: 100088, title: "최후의 심판", category: "액션", imageURL: "/plokij", progress: 0.0),
+                ContentModel(id: 72879, title: "비상과 아수라", category: "스릴러", imageURL: "/uhbygv", progress: 0.0)
             ]
         }
         

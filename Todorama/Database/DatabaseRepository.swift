@@ -56,3 +56,69 @@ final class DatabaseRepository: DatabaseRepositoryPr {
         }
     }
 }
+
+final class MockRepository: DatabaseRepositoryPr {
+    private var mockRatings: [Rating] = []
+    private let realm = try! Realm()
+
+    init() {
+        generateMockData()
+    }
+
+    func getFileURL() {
+        print("MockRepository에서는 파일 경로를 제공하지 않습니다.")
+    }
+
+    func fetchAll<T: RealmFetchable>() -> Results<T> {
+        guard T.self == Rating.self else {
+            fatalError("MockRepository는 Rating 타입만 지원합니다.")
+        }
+
+        try! realm.write {
+            realm.delete(realm.objects(Rating.self))  // 기존 Rating 삭제
+            for rating in mockRatings {
+                if let existingDrama = realm.object(ofType: Drama.self, forPrimaryKey: rating.dramaId) {
+                    let newRating = Rating(drama: existingDrama, rate: rating.rate, posterPath: rating.posterPath)
+                    realm.add(newRating)
+                }
+            }
+        }
+
+        return realm.objects(T.self) as! Results<T>
+    }
+
+    func createItem<T: Object>(data: T) {
+        guard let rating = data as? Rating else {
+            print("MockRepository에서는 Rating 타입만 지원합니다.")
+            return
+        }
+        mockRatings.append(rating)
+    }
+
+    func deleteItem<T: RealmFetchable>(itemId: Int, type: T) {
+        guard type is Rating else {
+            print("MockRepository에서는 Rating 타입만 지원합니다.")
+            return
+        }
+        mockRatings.removeAll { $0.dramaId == itemId }
+    }
+
+    private func generateMockData() {
+        let existingDramas = realm.objects(Drama.self)
+        
+        if existingDramas.isEmpty {
+            // Realm에 Drama 데이터가 없으면 추가
+            try! realm.write {
+                for id in 1...20 {
+                    let drama = Drama(dramaId: id, name: "Drama \(id)", backdropPath: "/path\(id).jpg", genre: id % 5)
+                    realm.add(drama)
+                }
+            }
+        }
+
+        // Realm에서 Drama 객체를 가져와서 Rating 생성
+        mockRatings = realm.objects(Drama.self).map { drama in
+            Rating(drama: drama, rate: Double.random(in: 1.0...10.0), posterPath: "/poster\(drama.dramaId).jpg")
+        }
+    }
+}

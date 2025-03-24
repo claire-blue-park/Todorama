@@ -4,18 +4,28 @@
 //
 //  Created by Claire on 3/22/25.
 //
+
 import UIKit
 import SnapKit
 import RxSwift
 import RxCocoa
 
 final class ButtonStack: UIStackView {
-    // 코멘트 버튼 클릭 이벤트 방출
     let commentButtonTapped = PublishSubject<Void>()
     
-    private let wantToWatchButton = UIButton()
-    private let commentButton = UIButton()
-    private let rateButton = UIButton()
+    private let wantToWatchButton = IconLabelButton(
+        title: Strings.Global.wantToWatch.text,
+        defaultIcon: SystemImages.plus.image,
+        toggledIcon: SystemImages.heart.image
+    )
+    private let commentButton = IconLabelButton(
+        title: Strings.Global.comment.text,
+        defaultIcon: SystemImages.pencil.image
+    )
+    private let rateButton = IconLabelButton(
+        title: Strings.Global.rate.text,
+        defaultIcon: SystemImages.star.image
+    )
     
     private let ratingOptions: [Double] = Array(stride(from: 0.0, through: 5.0, by: 0.5)).map { $0 }
     
@@ -50,74 +60,31 @@ final class ButtonStack: UIStackView {
         distribution = .equalCentering
         spacing = 40
         
-        let buttons = [
-            setupRxButton(wantToWatchButton, title: Strings.Global.wantToWatch.text, icon: SystemImages.plus.image),
-            setupRxButton(commentButton, title: Strings.Global.comment.text, icon: SystemImages.pencil.image),
-            setupRxButton(rateButton, title: Strings.Global.rate.text, icon: SystemImages.star.image)
-        ]
-        
-        buttons.forEach { addArrangedSubview($0) }
+        [wantToWatchButton, commentButton, rateButton].forEach { addArrangedSubview($0) }
         
         setupBindings()
     }
     
-    private func setupRxButton(_ button: UIButton, title: String, icon: UIImage) -> UIView {
-        let container = UIView()
-        
-        let iconImageView = UIImageView()
-        iconImageView.image = icon
-        iconImageView.contentMode = .scaleAspectFit
-        iconImageView.tintColor = .tdGray
-        
-        let titleLabel = UILabel()
-        titleLabel.text = title
-        titleLabel.accessoryStyle()
-        titleLabel.textColor = .tdGray
-        titleLabel.textAlignment = .center
-        
-        container.addSubview(iconImageView)
-        container.addSubview(titleLabel)
-        container.addSubview(button)
-        
-        iconImageView.snp.makeConstraints { make in
-            make.top.equalToSuperview()
-            make.centerX.equalToSuperview()
-            make.width.height.equalTo(32)
-        }
-        
-        titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(iconImageView.snp.bottom).offset(4)
-            make.centerX.equalToSuperview()
-            make.leading.trailing.equalToSuperview()
-        }
-        
-        button.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
-        
-        button.backgroundColor = .clear
-        
-        return container
-    }
-    
     private func setupBindings() {
         wantToWatchButton.rx.tap
-            .subscribe(with: self, onNext: { owner, _ in
+        
+            .subscribe(onNext: { [weak self] in
                 print("🌟 WANT TO WATCH")
+       
             })
             .disposed(by: disposeBag)
         
         commentButton.rx.tap
-            .subscribe(with: self, onNext: { owner, _ in
+            .subscribe(onNext: { [weak self] in
                 print("🌟 COMMENT")
-                owner.commentButtonTapped.onNext(())
+                self?.commentButtonTapped.onNext(())
             })
             .disposed(by: disposeBag)
         
         rateButton.rx.tap
-            .subscribe(with: self, onNext: { owner, _ in
+            .subscribe(onNext: { [weak self] in
                 print("🌟 RATE")
-                owner.showRatePicker()
+                self?.showRatePicker()
             })
             .disposed(by: disposeBag)
     }
@@ -159,7 +126,9 @@ final class ButtonStack: UIStackView {
         doneButton.rx.tap
             .subscribe(onNext: { [weak self] in
                 guard let self = self else { return }
-                print("선택 별점: \(self.rateTextField.text ?? "0.0")")
+                let selectedRating = self.rateTextField.text ?? "0.0"
+                print("선택 별점: \(selectedRating)")
+                self.rateButton.setRating(selectedRating) // 별점 설정
                 self.rateTextField.resignFirstResponder()
             })
             .disposed(by: disposeBag)

@@ -183,7 +183,7 @@ final class ArchiveViewModel: BaseViewModel {
                 contentModels.append(ContentModel(
                     id: drama.dramaId,
                     title: drama.name,
-                    category: GenreManager.shared.getGenre(drama.genre) ?? "",
+                    category: GenreManager.shared.getGenre(drama.genre) ?? Strings.Global.empty.text,
                     imageURL: drama.backdropPath,
                     progress: 0.0  // 별점은 진행률 표시 안함
                 ))
@@ -212,7 +212,7 @@ final class ArchiveViewModel: BaseViewModel {
                 contentModels.append(ContentModel(
                     id: drama.dramaId,
                     title: drama.name,
-                    category: GenreManager.shared.getGenre(drama.genre) ?? "",
+                    category: GenreManager.shared.getGenre(drama.genre) ?? Strings.Global.empty.text,
                     imageURL: drama.backdropPath,
                     progress: 0.0
                 ))
@@ -241,7 +241,7 @@ final class ArchiveViewModel: BaseViewModel {
                 contentModels.append(ContentModel(
                     id: drama.dramaId,
                     title: drama.name,
-                    category: GenreManager.shared.getGenre(drama.genre) ?? "",
+                    category: GenreManager.shared.getGenre(drama.genre) ?? Strings.Global.empty.text,
                     imageURL: drama.backdropPath,
                     progress: 1.0  // 완료된 항목은 진행률 100%
                 ))
@@ -273,7 +273,7 @@ final class ArchiveViewModel: BaseViewModel {
                 contentModels.append(ContentModel(
                     id: drama.dramaId,
                     title: drama.name,
-                    category: GenreManager.shared.getGenre(drama.genre) ?? "",
+                    category: GenreManager.shared.getGenre(drama.genre) ?? Strings.Global.empty.text,
                     imageURL: drama.backdropPath,
                     progress: progress
                 ))
@@ -302,7 +302,7 @@ final class ArchiveViewModel: BaseViewModel {
                 contentModels.append(ContentModel(
                     id: drama.dramaId,
                     title: drama.name,
-                    category: GenreManager.shared.getGenre(drama.genre) ?? "",
+                    category: GenreManager.shared.getGenre(drama.genre) ?? Strings.Global.empty.text,
                     imageURL: drama.backdropPath,
                     progress: 0.0  // 코멘트는 진행률 표시 안함
                 ))

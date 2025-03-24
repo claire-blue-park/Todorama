@@ -8,17 +8,19 @@
 import UIKit
 import SnapKit
 
-class SectionHeaderView: UICollectionReusableView {
+final class SectionHeaderView: UICollectionReusableView {
     static let reuseIdentifier = "SectionHeaderView"
 
     private let titleView = SectionTitleView(title: "")
-
     override init(frame: CGRect) {
         super.init(frame: frame)
+        configureView()
+    }
+    private func configureView() {
         addSubview(titleView)
-        
         titleView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.verticalEdges.equalToSuperview().inset(12)
+            make.horizontalEdges.equalToSuperview()
         }
     }
 

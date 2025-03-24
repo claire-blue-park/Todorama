@@ -84,7 +84,7 @@ final class ArchiveViewController: BaseViewController {
         
         // Navigation title
         navigationItem.title = Strings.NavTitle.archive.text
-        navigationController?.navigationBar.topItem?.backButtonTitle = "" // 화살표만 뜨도록
+        navigationController?.navigationBar.topItem?.backButtonTitle = Strings.Global.empty.text // 화살표만 뜨도록
         navigationController?.navigationBar.tintColor = .tdMain
         
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]

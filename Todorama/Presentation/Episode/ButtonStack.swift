@@ -1,46 +1,18 @@
-//
-//  ButtonStack.swift
-//  Todorama
-//
-//  Created by Claire on 3/22/25.
-//
-
 import UIKit
 import SnapKit
-//
-//final class labelButton: UIView {
-//    private var label: String?
-//    private var image: UIImage?
-//    
-//    
-//    init(label: String, image: UIImage) {
-//        self.label = label
-//        self.image = image
-//    }
-//    
-//    required init?(coder: NSCoder) {
-//        fatalError("init(coder:) has not been implemented")
-//    }
-//    
-//    let iconImageView = UIImageView()
-//    iconImageView.image = image
-//    iconImageView.contentMode = .scaleAspectFit
-//    iconImageView.tintColor = .tdGray
-//    
-//  
-//    titleLabel.text = label
-//    titleLabel.textStyle()
-//    titleLabel.textColor = .tdGray
-//    titleLabel.textAlignment = .center
-//}
+import RxSwift
+import RxCocoa
 
 final class ButtonStack: UIStackView {
+    private let wantToWatchButton = UIButton()
+    private let commentButton = UIButton()
+    private let rateButton = UIButton()
+    
+    private let disposeBag = DisposeBag()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
         setupButtonStack()
-
     }
     
     required init(coder: NSCoder) {
@@ -52,19 +24,18 @@ final class ButtonStack: UIStackView {
         distribution = .equalCentering
         spacing = 40
         
-        let buttons: [(title: String, icon: UIImage)] = [
-            (Strings.Global.wantToWatch.text, SystemImages.plus.image),
-            (Strings.Global.comment.text, SystemImages.pencil.image),
-            (Strings.Global.rate.text, SystemImages.star.image)
+        let buttons = [
+            setupRxButton(wantToWatchButton, title: Strings.Global.wantToWatch.text, icon: SystemImages.plus.image),
+            setupRxButton(commentButton, title: Strings.Global.comment.text, icon: SystemImages.pencil.image),
+            setupRxButton(rateButton, title: Strings.Global.rate.text, icon: SystemImages.star.image)
         ]
         
-        for (title, icon) in buttons {
-            let button = setButton(title: title, icon: icon)
-            addArrangedSubview(button)
-        }
+        buttons.forEach { addArrangedSubview($0) }
+        
+        setupBindings()
     }
     
-    private func setButton(title: String, icon: UIImage) -> UIView {
+    private func setupRxButton(_ button: UIButton, title: String, icon: UIImage) -> UIView {
         let container = UIView()
         
         let iconImageView = UIImageView()
@@ -80,6 +51,7 @@ final class ButtonStack: UIStackView {
         
         container.addSubview(iconImageView)
         container.addSubview(titleLabel)
+        container.addSubview(button)
         
         iconImageView.snp.makeConstraints { make in
             make.top.equalToSuperview()
@@ -93,6 +65,32 @@ final class ButtonStack: UIStackView {
             make.leading.trailing.equalToSuperview()
         }
         
+        button.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
+        button.backgroundColor = .clear
+        
         return container
+    }
+    
+    private func setupBindings() {
+        wantToWatchButton.rx.tap
+            .subscribe(with: self, onNext: { owner, _ in
+                print("보고싶어요 클릭")
+            })
+            .disposed(by: disposeBag)
+        
+        commentButton.rx.tap
+            .subscribe(with: self, onNext: { owner, _ in
+                print("코멘트 클릭")
+            })
+            .disposed(by: disposeBag)
+        
+        rateButton.rx.tap
+            .subscribe(with: self, onNext: { owner, _ in
+                print("별점 클릭")
+            })
+            .disposed(by: disposeBag)
     }
 }

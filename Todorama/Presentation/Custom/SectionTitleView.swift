@@ -18,7 +18,7 @@ final class SectionTitleView: UIView {
     private var labelUnderline: CALayer?
     
     override init(frame: CGRect) {
-        self.title = ""
+        self.title = Strings.Global.empty.text
         super.init(frame: frame)
         setupView()
     }

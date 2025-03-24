@@ -29,7 +29,7 @@ class SearchViewController: BaseViewController {
             owner.view.endEditing(true)
         }.disposed(by: disposeBag)
         output.cancelButtonTapped.drive(with: self) { owner, _ in
-            owner.searchBar.text = ""
+            owner.searchBar.text = Strings.Global.empty.text
             owner.view.endEditing(true)
         }.disposed(by: disposeBag)
         let dataSource = RxCollectionViewSectionedReloadDataSource<SectionModel<String, AnyHashable>>( configureCell: { dataSource, collectionView, indexPath, item in

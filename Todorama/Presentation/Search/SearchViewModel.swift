@@ -27,7 +27,7 @@ final class SearchViewModel: BaseViewModel {
     struct InternalData {
         let searchData = BehaviorSubject<[PopularDetail]>(value: [PopularDetail]())
         let errorMessageTrigger = PublishSubject<(NetworkError, Bool)>()
-        let query = BehaviorSubject<String>(value: "")
+        let query = BehaviorSubject<String>(value: Strings.Global.empty.text)
         let networkStatus : Observable<Bool>
 
         var total = 0
@@ -40,7 +40,7 @@ final class SearchViewModel: BaseViewModel {
     func transform(input: Input) -> Output {
         let sectionData = internalData.searchData
             .map { popularList in
-                [SectionModel(model: "", items: popularList.map { AnyHashable($0) })]
+                [SectionModel(model: Strings.Global.empty.text, items: popularList.map { AnyHashable($0) })]
             }
         let resignKeyboardTrigger = input.searchButtonTapped
             .map { _ in }

@@ -18,6 +18,7 @@ final class PosterCollectionViewCell: UICollectionViewCell {
         return imageView
     }()
     private let label = UILabel()
+    private let emptyLabel = UILabel()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -26,13 +27,18 @@ final class PosterCollectionViewCell: UICollectionViewCell {
     private func configureView() {
         stackView.axis = .vertical
         contentView.addSubview(stackView)
+        stackView.addArrangedSubview(emptyLabel)
         stackView.addArrangedSubview(imageView)
         stackView.addArrangedSubview(label)
         stackView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
+        
         imageView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
+        }
+        emptyLabel.snp.makeConstraints { make in
+            make.edges.equalTo(imageView)
         }
         label.snp.makeConstraints { make in
             make.height.equalTo(17)
@@ -41,18 +47,23 @@ final class PosterCollectionViewCell: UICollectionViewCell {
         label.font = Fonts.textFont
         label.isHidden = true
         self.imageView.layer.cornerRadius = 8
+        emptyLabel.dramaTitleStyle()
+        emptyLabel.textAlignment = .center
+        emptyLabel.backgroundColor = .tdBlack
     }
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func configure(with imageName: String?, rate: Double? = nil) {
+    func configure(with imageName: String?,title: String?, rate: Double? = nil) {
         if let imageName  {
             let imageBase = "https://image.tmdb.org/t/p/w500"
             let url = URL(string: imageBase + imageName)
             imageView.kf.setImage(with: url)
         } else {
-            imageView.image = UIImage(systemName: "star")
+            //imageView.image = UIImage(systemName: "star")
+            imageView.isHidden = true
+            emptyLabel.text = title
         }
 
         if let rate {

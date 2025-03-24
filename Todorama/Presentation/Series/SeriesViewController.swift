@@ -25,7 +25,7 @@ final class SeriesViewController: BaseViewController {
     private let linkButton = UIButton()
     
     private lazy var seriesCollectionView = UICollectionView(frame: .zero, collectionViewLayout: createRelatedSeriesLayout())
-
+    
     init(id: Int) {
         self.viewModel = SeriesViewModel(id: id)
         super.init(nibName: nil, bundle: nil)
@@ -44,22 +44,34 @@ final class SeriesViewController: BaseViewController {
         let output = viewModel.transform(input: input)
         
         let defaultSeries = Series(id: -1, name: "", backdrop_path: "", number_of_seasons: -1, status: "", genres: [], overview: "", seasons: [], networks: [])
-
+        
         output.result
-             .asDriver(onErrorJustReturn: defaultSeries)
-             .drive(with: self, onNext: { owner, series in
-                 owner.loadData(with: series)
-                 
-                 Observable.just(series.seasons)
-                     .asDriver(onErrorJustReturn: [])
-                     .drive(owner.seriesCollectionView.rx.items(
-                         cellIdentifier: SeriesCollectionViewCell.identifier,
-                         cellType: SeriesCollectionViewCell.self)) {(row, element, cell) in
-                             cell.bindData(with: element)
-                         }
-                     .disposed(by: owner.disposeBag)
-             })
-             .disposed(by: disposeBag)
+            .asDriver(onErrorJustReturn: defaultSeries)
+            .drive(with: self, onNext: { owner, series in
+                owner.loadData(with: series)
+                
+                Observable.just(series.seasons)
+                    .asDriver(onErrorJustReturn: [])
+                    .drive(owner.seriesCollectionView.rx.items(
+                        cellIdentifier: SeriesCollectionViewCell.identifier,
+                        cellType: SeriesCollectionViewCell.self)) {(row, element, cell) in
+                            cell.bindData(with: element)
+                        }
+                        .disposed(by: owner.disposeBag)
+            })
+            .disposed(by: disposeBag)
+        
+        seriesCollectionView.rx.itemSelected
+            .withLatestFrom(output.result) { indexPath, series in
+                (indexPath, series)
+            }
+            .subscribe(onNext: { [weak self] indexPath, series in
+                guard indexPath.row < series.seasons.count else { return }
+                let selectedSeason = series.seasons[indexPath.row]
+                let controller = EpisodeViewController(id: series.id, season: selectedSeason.season_number)
+                self?.navigationController?.pushViewController(controller, animated: true)
+            })
+            .disposed(by: disposeBag)
     }
     
     private func loadData(with series: Series) {
@@ -143,13 +155,13 @@ final class SeriesViewController: BaseViewController {
         dramaTitleLabel.navTitleStyle()
         
         infoLabel.textStyle()
-    
+        
         synopsisLabel.textStyle()
         synopsisLabel.numberOfLines = 0
-
+        
         linkButton.setTitle("보러가기", for: .normal)
         linkButton.titleLabel?.textStyle()
-    
+        
         seriesCollectionView.backgroundColor = .clear
         seriesCollectionView.showsHorizontalScrollIndicator = false
         seriesCollectionView.register(SeriesCollectionViewCell.self, forCellWithReuseIdentifier: "SeriesCollectionViewCell")
@@ -160,7 +172,7 @@ final class SeriesViewController: BaseViewController {
             let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
                                                   heightDimension: .fractionalHeight(1))
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
- 
+            
             let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.4),
                                                    heightDimension: .fractionalHeight(1))
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, repeatingSubitem: item, count: 1)

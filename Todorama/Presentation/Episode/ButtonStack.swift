@@ -1,18 +1,42 @@
+//
+//  ButtonStack.swift
+//  Todorama
+//
+//  Created by Claire on 3/22/25.
+//
 import UIKit
 import SnapKit
 import RxSwift
 import RxCocoa
 
 final class ButtonStack: UIStackView {
+    
     private let wantToWatchButton = UIButton()
     private let commentButton = UIButton()
     private let rateButton = UIButton()
+    
+    private let ratingOptions: [Double] = Array(stride(from: 0.0, through: 5.0, by: 0.5)).map { $0 }
+    
+    private lazy var ratePickerView: UIPickerView = {
+        let picker = UIPickerView()
+        return picker
+    }()
+    
+    private lazy var rateTextField: UITextField = {
+        let textField = UITextField()
+        textField.inputView = ratePickerView
+        textField.inputAccessoryView = setupInputAccessoryView()
+        textField.text = "0.0"
+        return textField
+    }()
     
     private let disposeBag = DisposeBag()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupButtonStack()
+        setupRateTextField()
+        setupPickerBinding()
     }
     
     required init(coder: NSCoder) {
@@ -77,20 +101,76 @@ final class ButtonStack: UIStackView {
     private func setupBindings() {
         wantToWatchButton.rx.tap
             .subscribe(with: self, onNext: { owner, _ in
-                print("보고싶어요 클릭")
+                print("🌟 WANT TO WATCH")
             })
             .disposed(by: disposeBag)
         
         commentButton.rx.tap
             .subscribe(with: self, onNext: { owner, _ in
-                print("코멘트 클릭")
+                print("🌟 COMMENT")
             })
             .disposed(by: disposeBag)
         
         rateButton.rx.tap
             .subscribe(with: self, onNext: { owner, _ in
-                print("별점 클릭")
+                print("🌟 RATE")
+                owner.showRatePicker()
             })
             .disposed(by: disposeBag)
+    }
+    
+    private func setupRateTextField() {
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            window.addSubview(rateTextField)
+            rateTextField.isHidden = true
+        }
+    }
+    
+    private func setupPickerBinding() {
+        Observable.just(ratingOptions)
+            .bind(to: ratePickerView.rx.itemTitles) { _, item in
+                String(format: "%.1f", item)
+            }
+            .disposed(by: disposeBag)
+        
+        ratePickerView.rx.modelSelected(Double.self)
+            .subscribe(onNext: { [weak self] selected in
+                if let rating = selected.first {
+                    self?.rateTextField.text = String(format: "%.1f", rating)
+                }
+            })
+            .disposed(by: disposeBag)
+    }
+    
+    private func setupInputAccessoryView() -> UIToolbar {
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        
+        let doneButton = UIBarButtonItem(title: "확인", style: .done, target: nil, action: nil)
+        let cancelButton = UIBarButtonItem(title: "취소", style: .plain, target: nil, action: nil)
+        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        
+        toolbar.setItems([cancelButton, flexibleSpace, doneButton], animated: false)
+        
+        doneButton.rx.tap
+            .subscribe(onNext: { [weak self] in
+                guard let self = self else { return }
+                print("선택 별점: \(self.rateTextField.text ?? "0.0")")
+                self.rateTextField.resignFirstResponder()
+            })
+            .disposed(by: disposeBag)
+        
+        cancelButton.rx.tap
+            .subscribe(onNext: { [weak self] in
+                self?.rateTextField.resignFirstResponder()
+            })
+            .disposed(by: disposeBag)
+        
+        return toolbar
+    }
+    
+    private func showRatePicker() {
+        rateTextField.becomeFirstResponder()
     }
 }

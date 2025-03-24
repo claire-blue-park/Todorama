@@ -46,7 +46,12 @@ final class SearchViewModel: BaseViewModel {
             .map { _ in }
             .asDriver(onErrorDriveWith: .empty())
         
-        input.searchButtonTapped.bind(to: internalData.query).disposed(by: disposeBag)
+        input.searchButtonTapped.bind(with: self) { owner, newText in
+            guard let oldText = try? owner.internalData.query.value(), oldText != newText else {return}
+            print(oldText, newText)
+            owner.internalData.query.onNext(newText)
+        }.disposed(by: disposeBag)
+        
         internalData.query.bind(with: self) { owner, query in
             owner.internalData.page = 1
             owner.internalData.isEnd = false

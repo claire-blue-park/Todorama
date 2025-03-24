@@ -24,11 +24,11 @@ final class ArchiveViewController: BaseViewController {
     private let buttonStackView = UIStackView()
     
     // 각 카테고리 버튼
-    private lazy var wantToWatchButton = CountButton(count: 44, name: Strings.Global.wantToWatch.text, isInteractive: false)
-    private lazy var watchingButton = CountButton(count: 12, name: Strings.Global.watching.text, isInteractive: false)
-    private lazy var watchedButton = CountButton(count: 3, name: Strings.Global.alreadyWatched.text, isInteractive: false)
-    private lazy var commentButton = CountButton(count: 88, name: Strings.Global.comment.text, isInteractive: true)
-    private lazy var rateButton = CountButton(count: 40, name: Strings.Global.rate.text, isInteractive: true)
+    private lazy var wantToWatchButton = CountButton(count: 0, name: Strings.Global.wantToWatch.text, isInteractive: false)
+    private lazy var watchingButton = CountButton(count: 0, name: Strings.Global.watching.text, isInteractive: false)
+    private lazy var watchedButton = CountButton(count: 0, name: Strings.Global.alreadyWatched.text, isInteractive: false)
+    private lazy var commentButton = CountButton(count: 0, name: Strings.Global.comment.text, isInteractive: true)
+    private lazy var rateButton = CountButton(count: 0, name: Strings.Global.rate.text, isInteractive: true)
     
     // 컨텐츠 컬렉션 뷰
     private lazy var collectionView: UICollectionView = {
@@ -102,8 +102,6 @@ final class ArchiveViewController: BaseViewController {
         buttonStackView.axis = .horizontal
         buttonStackView.distribution = .fillEqually
         buttonStackView.spacing = 8
-        
-       
     }
     
     override func bind() {
@@ -117,19 +115,16 @@ final class ArchiveViewController: BaseViewController {
                     return UICollectionViewCell()
                 }
                 
-                // ContentModel은 이제 BackDropModel 프로토콜을 구현하므로
-                // 직접 BackDrop 생성자에 전달
-                let backdropItem = BackDrop(modelType: item)
+                // BackDrop 모델로 변환하여 셀에 전달
+                let backDrop = BackDrop(modelType: item)
                 
-                // 현재 섹션 타입 확인 (watching 섹션인지)
-                let sectionType = dataSource.sectionModels[indexPath.section].model
-                let showProgress = (sectionType == .watching || sectionType == .watched)
-                
-                // BackdropCollectionViewCell의 configure 메서드 수정
-                if showProgress {
-                    cell.configure(item: backdropItem, progress: item.progress)
+                // 진행률이 있는 아이템이고, watching 섹션이면 진행률 표시
+                if item.progress > 0 && item.progress < 1 && dataSource.sectionModels[indexPath.section].model == .watching {
+                    // 진행률과 함께 셀 구성
+                    cell.configure(item: backDrop, progress: item.progress)
                 } else {
-                    cell.configure(item: backdropItem)
+                    // 기본 셀 구성 (진행률 없음)
+                    cell.configure(item: backDrop)
                 }
                 
                 return cell
@@ -163,49 +158,63 @@ final class ArchiveViewController: BaseViewController {
             .drive(collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
         
-        // 아이템 선택 처리
-        collectionView.rx.itemSelected
-            .subscribe(onNext: { [weak self] indexPath in
-                // Handle selection
-                print("Selected item at \(indexPath)")
-                // 해당 셀이 갖고 있는 id로 id에 맞는 Series뷰컨으로 전환
+        // 카운트 정보 바인딩
+        output.wishListCount
+            .drive(onNext: { [weak self] count in
+                self?.wantToWatchButton.updateCount(count: count)
             })
             .disposed(by: disposeBag)
-    
         
+        output.watchingCount
+            .drive(onNext: { [weak self] count in
+                self?.watchingButton.updateCount(count: count)
+            })
+            .disposed(by: disposeBag)
+        
+        output.watchedCount
+            .drive(onNext: { [weak self] count in
+                self?.watchedButton.updateCount(count: count)
+            })
+            .disposed(by: disposeBag)
+        
+        output.commentCount
+            .drive(onNext: { [weak self] count in
+                self?.commentButton.updateCount(count: count)
+            })
+            .disposed(by: disposeBag)
+        
+        // 아이템 선택 처리 - 중요: 여기서 올바른 드라마 ID를 SeriesViewController로 전달
+        collectionView.rx.modelSelected(ContentModel.self)
+            .subscribe(onNext: { [weak self] model in
+                print("Selected item with dramaId: \(model.id)")
+                
+                // 드라마 ID로 SeriesViewController 생성 및 이동
+                let seriesVC = SeriesViewController(id: model.id)
+                self?.navigationController?.pushViewController(seriesVC, animated: true)
+            })
+            .disposed(by: disposeBag)
+        
+        // 코멘트 버튼 탭 처리
         commentButton.rx.tap
-            .do(onNext: { _ in  })
             .subscribe(onNext: { [weak self] _ in
                 let commentVC = CommentViewController()
                 self?.navigationController?.pushViewController(commentVC, animated: true)
             })
             .disposed(by: disposeBag)
 
+        // 별점 버튼 탭 처리
         rateButton.rx.tap
-            .do(onNext: { _ in  })
             .subscribe(onNext: { [weak self] _ in
                 let rateVC = RateViewController()
                 self?.navigationController?.pushViewController(rateVC, animated: true)
             })
             .disposed(by: disposeBag)
-        
-        collectionView.rx.itemSelected
-            .subscribe(onNext: { [weak self] indexPath in
-                // Handle selection
-                print("Selected item at \(indexPath)")
-                // 해당 셀이 갖고 있는 id로 id에 맞는 Series뷰컨으로 전환
-            })
-            .disposed(by: disposeBag)
-        
-        
     }
     
     // MARK: - Collection View Configuration
     private func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
         return UICollectionViewCompositionalLayout { [weak self] (sectionIndex, environment) -> NSCollectionLayoutSection? in
             guard let self = self else { return nil }
-            
-            
             return self.createHorizontalSection()
         }
     }
@@ -246,8 +255,9 @@ final class ArchiveViewController: BaseViewController {
         )
         section.boundarySupplementaryItems = [header]
         
+        // 섹션 간격 설정
+        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 20, trailing: 16)
+        
         return section
     }
-    
-   
 }

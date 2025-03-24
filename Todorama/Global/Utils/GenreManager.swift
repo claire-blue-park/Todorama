@@ -30,8 +30,7 @@ class GenreManager {
         10402: "음악",
         10749: "로맨스",
         10770: "TV 영화",
-        10752: "전쟁",
-        
+        10752: "전쟁",        
         // TV 장르
         10759: "액션 & 어드벤처",
         10762: "어린이",
@@ -40,12 +39,18 @@ class GenreManager {
         10765: "SF & 판타지",
         10766: "소프",
         10767: "토크쇼",
-        10768: "전쟁 & 정치"
+        10768: "전쟁 & 정치",
+        00: ""
     ]
     private init() { }
     
-    func getGenre(_ id: Int) -> String? {
-        return genres[id]
+    func getGenre(_ id: Int) -> String {
+        if let result = genres[id] {
+            return result
+        } else {
+            return Strings.Global.none.text
+        }
+
     }
 }
 

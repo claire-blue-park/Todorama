@@ -203,7 +203,7 @@ final class CommentViewController: BaseViewController {
         tableView.rx.modelSelected(CommentItem.self)
             .subscribe(onNext: { [weak self] comment in
                 print("Selected comment: \(comment.title)")
-                // TODO: 상세 화면으로 이동
+                // 채현님이 만든 코멘트 수정 뷰로 이동하도록 추후 수정
             })
             .disposed(by: disposeBag)
     }

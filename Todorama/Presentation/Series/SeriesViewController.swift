@@ -79,7 +79,10 @@ final class SeriesViewController: BaseViewController {
             backdropView.kf.setImage(with: URL(string: ImageSize.backdrop780(url: image).fullUrl))
         }
         dramaTitleLabel.text = series.name
-        infoLabel.text = "\(Strings.Global.season.text) \(series.number_of_seasons)\(Strings.Unit.count.text) · \(series.status) · \(series.genres[0].name)"
+
+        let genreId = series.genres.first?.id ?? 00
+        let genreKo = GenreManager.shared.getGenre(genreId)
+        infoLabel.text = "\(Strings.Global.season.text) \(series.number_of_seasons)\(Strings.Unit.count.text) · \(series.status) · \(genreKo)"
         synopsisLabel.text = series.overview
         
         seriesCollectionView.reloadData()

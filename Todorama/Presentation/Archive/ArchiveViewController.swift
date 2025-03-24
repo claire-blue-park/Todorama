@@ -183,6 +183,12 @@ final class ArchiveViewController: BaseViewController {
             })
             .disposed(by: disposeBag)
         
+        output.rateCount
+            .drive(onNext: { [weak self] count in
+                self?.rateButton.updateCount(count: count)
+            })
+            .disposed(by: disposeBag)
+        
         // 아이템 선택 처리 - 중요: 여기서 올바른 드라마 ID를 SeriesViewController로 전달
         collectionView.rx.modelSelected(ContentModel.self)
             .subscribe(onNext: { [weak self] model in
@@ -201,7 +207,7 @@ final class ArchiveViewController: BaseViewController {
                 self?.navigationController?.pushViewController(commentVC, animated: true)
             })
             .disposed(by: disposeBag)
-
+        
         // 별점 버튼 탭 처리
         rateButton.rx.tap
             .subscribe(onNext: { [weak self] _ in

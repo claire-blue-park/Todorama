@@ -44,8 +44,13 @@ class GenreManager {
     ]
     private init() { }
     
-    func getGenre(_ id: Int) -> String? {
-        return genres[id]
+    func getGenre(_ id: Int) -> String {
+        if let result = genres[id] {
+            return result
+        } else {
+            return Strings.Global.none.text
+        }
+
     }
 }
 

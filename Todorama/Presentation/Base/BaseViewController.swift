@@ -16,6 +16,11 @@ class BaseViewController: UIViewController {
         configureLayout()
         configureView()
         bind()
+        
+        navigationController?.navigationBar.topItem?.backButtonTitle = Strings.Global.empty.text
+        navigationController?.navigationBar.tintColor = .tdMain
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+
     }
     
     

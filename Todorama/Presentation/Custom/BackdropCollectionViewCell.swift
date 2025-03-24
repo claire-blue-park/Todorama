@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Kingfisher
 
 class BackdropCollectionViewCell: UICollectionViewCell {
     
@@ -20,6 +21,7 @@ class BackdropCollectionViewCell: UICollectionViewCell {
     private let titleLabel = UILabel()
     private let genreLabel = UILabel()
     private let progressView = CustomProgressView() // 프로그레스 뷰 추가
+    private let emptyTitleLabel = UILabel() // 이미지가 없을 때 제목 표시용 label 추가
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -28,10 +30,18 @@ class BackdropCollectionViewCell: UICollectionViewCell {
     
     private func configureView() {
         contentView.addSubview(backdropImageView)
-        
         contentView.addSubview(titleLabel)
         contentView.addSubview(genreLabel)
         contentView.addSubview(progressView) // 프로그레스 뷰 추가
+        
+        // emptyTitleLabel 설정
+        contentView.addSubview(emptyTitleLabel)
+        emptyTitleLabel.navTitleStyle() // 요청대로 navTitleStyle 적용
+        emptyTitleLabel.textAlignment = .center
+        emptyTitleLabel.numberOfLines = 2
+        emptyTitleLabel.isHidden = true // 기본적으로 숨김
+        backdropImageView.layer.cornerRadius = 8
+        backdropImageView.clipsToBounds = true
         setupLayout()
         
         titleLabel.dramaTitleStyle()
@@ -41,6 +51,8 @@ class BackdropCollectionViewCell: UICollectionViewCell {
         progressView.progressTintColor = .tdMain
         progressView.trackTintColor = .tdGray
         progressView.isHidden = true // 기본적으로 숨김 처리
+        
+        
     }
     
     private func setupLayout() {
@@ -50,11 +62,16 @@ class BackdropCollectionViewCell: UICollectionViewCell {
             make.bottom.equalTo(titleLabel.snp.top).offset(-8)
         }
         
+        // emptyTitleLabel 레이아웃
+        emptyTitleLabel.snp.makeConstraints { make in
+            make.center.equalTo(backdropImageView)
+            make.horizontalEdges.equalTo(backdropImageView).inset(8)
+        }
+        
         // 프로그레스 뷰 레이아웃
         progressView.snp.makeConstraints { make in
             make.horizontalEdges.equalToSuperview()
             make.height.equalTo(8)
-            
             make.bottom.equalTo(backdropImageView.snp.bottom)
         }
         
@@ -84,31 +101,36 @@ class BackdropCollectionViewCell: UICollectionViewCell {
     }
     
     private func configure(item: BackDrop? = nil, progress: Float = 0.0, showProgress: Bool = false) {
+        emptyTitleLabel.isHidden = true
+        backdropImageView.isHidden = false
+        
         if let item {
+            titleLabel.text = item.name
+            genreLabel.text = item.genre
+            
             if let imagePath = item.imagePath, !imagePath.isEmpty {
-                let imageBase = "https://image.tmdb.org/t/p/w500"
-                let url = URL(string: imageBase + imagePath)
+                // TMDBRequest의 ImageSize enum 활용
+                let fullUrl = ImageSize.poster154(url: imagePath).fullUrl
+                let url = URL(string: fullUrl)
+                
                 backdropImageView.kf.setImage(with: url, placeholder: UIImage(systemName: "film"), options: nil, completionHandler: { result in
                     switch result {
                     case .success(_):
                         // 이미지 로드 성공
                         break
                     case .failure(_):
-                        // 이미지 로드 실패 시 기본 이미지 설정
-                        self.backdropImageView.image = UIImage(systemName: "film")
-                        self.backdropImageView.contentMode = .scaleAspectFit
-                        self.backdropImageView.tintColor = .white
+                        // 이미지 로드 실패 시 제목 표시
+                        self.showEmptyState(with: item.name)
                     }
                 })
             } else {
-                backdropImageView.image = UIImage(systemName: "film")
-                backdropImageView.contentMode = .scaleAspectFit
-                backdropImageView.tintColor = .white
+                // 이미지가 없는 경우 제목 표시
+                showEmptyState(with: item.name)
             }
-            titleLabel.text = item.name
-            genreLabel.text = item.genre
         } else {
-            backdropImageView.image = UIImage(systemName: "star")
+            backdropImageView.image = UIImage(systemName: "film")
+            backdropImageView.contentMode = .scaleAspectFit
+            backdropImageView.tintColor = .white
             titleLabel.text = "title"
             genreLabel.text = "Genre"
         }
@@ -120,5 +142,12 @@ class BackdropCollectionViewCell: UICollectionViewCell {
         if showProgress {
             progressView.setProgress(progress, animated: false)
         }
+    }
+    
+    private func showEmptyState(with title: String) {
+        backdropImageView.image = nil
+        backdropImageView.backgroundColor = .tdDarkGray
+        emptyTitleLabel.isHidden = false
+        emptyTitleLabel.text = title
     }
 }

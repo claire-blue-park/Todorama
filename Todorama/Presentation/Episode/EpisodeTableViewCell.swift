@@ -76,8 +76,8 @@ final class EpisodeTableViewCell: UITableViewCell {
         }
         
         durationLabel.snp.makeConstraints { make in
-            make.leading.equalTo(episodeNumberLabel.snp.trailing).offset(8)
-            make.centerY.equalTo(episodeNumberLabel)
+            make.top.equalTo(episodeNumberLabel.snp.bottom).offset(4)
+            make.leading.equalTo(episodeNumberLabel.snp.leading)
         }
         
         checkmarkImageView.snp.makeConstraints { make in
@@ -87,13 +87,13 @@ final class EpisodeTableViewCell: UITableViewCell {
         }
         
         dateLabel.snp.makeConstraints { make in
-            make.top.equalTo(episodeNumberLabel.snp.bottom).offset(4)
-            make.leading.equalTo(episodeNumberLabel)
+            make.bottom.equalTo(thumbnailImageView.snp.bottom).offset(-4)
+            make.leading.equalTo(durationLabel)
         }
         
         episodeDescriptionLabel.snp.makeConstraints { make in
-            make.top.equalTo(dateLabel.snp.bottom).offset(8)
-            make.leading.equalTo(episodeNumberLabel)
+            make.top.equalTo(thumbnailImageView.snp.bottom).offset(8)
+            make.leading.equalTo(thumbnailImageView)
             make.trailing.equalToSuperview().inset(16)
             make.bottom.equalToSuperview().inset(12)
         }
@@ -101,11 +101,13 @@ final class EpisodeTableViewCell: UITableViewCell {
     
     // MARK: - Configure Cell
     
-//    func bindData(with episode: Episode) {
-//        episodeNumberLabel.text = "\(episode.number)화"
-//        durationLabel.text = episode.duration
-//        dateLabel.text = episode.broadcastDate
-//        episodeDescriptionLabel.text = episode.description
+    func bindData(with episode: Episode) {
+        thumbnailImageView.kf.setImage(with: URL(string: ImageSize.profile185(url: episode.still_path ?? "").fullUrl))
+        episodeNumberLabel.text = "\(episode.episode_number)\(Strings.Unit.epi.text)"
+        durationLabel.text = episode.runtime == nil ? "-" : "\(episode.runtime!)\(Strings.Unit.minute.text)"
+        dateLabel.text = DateFormatHelper.shared.getFormattedDate(episode.air_date) + " " + "\(Strings.Global.air.text)"
+        episodeDescriptionLabel.text = episode.overview
+        checkmarkImageView.tintColor = .tdDarkGray
 //        checkmarkImageView.tintColor = episode.isWatched ? .tdMain : .tdDarkGray
-//    }
+    }
 }

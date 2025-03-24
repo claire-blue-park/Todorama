@@ -38,6 +38,11 @@ final class CommentViewController: BaseViewController {
     // MARK: - Setup
     private func setupNavigation() {
         navigationItem.title = Strings.NavTitle.comment.text
+        navigationController?.navigationBar.topItem?.backButtonTitle = Strings.Global.empty.text
+        navigationController?.navigationBar.tintColor = .tdMain
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        
+        
     }
     
     // MARK: - BaseViewController Methods

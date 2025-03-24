@@ -10,6 +10,8 @@ import RxSwift
 import RxCocoa
 
 final class ButtonStack: UIStackView {
+    // 코멘트 버튼 클릭 이벤트 방출
+    let commentButtonTapped = PublishSubject<Void>()
     
     private let wantToWatchButton = UIButton()
     private let commentButton = UIButton()
@@ -108,6 +110,7 @@ final class ButtonStack: UIStackView {
         commentButton.rx.tap
             .subscribe(with: self, onNext: { owner, _ in
                 print("🌟 COMMENT")
+                owner.commentButtonTapped.onNext(())
             })
             .disposed(by: disposeBag)
         

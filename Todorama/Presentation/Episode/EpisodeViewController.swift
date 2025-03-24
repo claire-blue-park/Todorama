@@ -12,7 +12,6 @@ import SnapKit
 
 final class EpisodeViewController: BaseViewController {
     private let disposeBag = DisposeBag()
-//    private var series: Series
     private var viewModel: EpisodeViewModel
     
     private let posterView = UIImageView()
@@ -104,19 +103,13 @@ final class EpisodeViewController: BaseViewController {
     override func bind() {
         let input = EpisodeViewModel.Input()
         let output = viewModel.transform(input: input)
-        
-        
-        
-//        output.result
- //            .map { $0.seasons }
- //            .asDriver(onErrorJustReturn: [])
- //            .drive(seriesCollectionView.rx.items(
- //                cellIdentifier: SeriesCollectionViewCell.identifier,
- //                cellType: SeriesCollectionViewCell.self)) {(row, element, cell) in
- //
- //                cell.bindData(with: element)
- //            }
- //            .disposed(by: disposeBag)
+
+        buttonStackView.commentButtonTapped
+                    .subscribe(onNext: { [weak self] in
+                        let controller = EditingCommentViewController()
+                        self?.navigationController?.pushViewController(controller, animated: true)
+                    })
+                    .disposed(by: disposeBag)
         
         output.result
             .asDriver(onErrorJustReturn: SeasonDetail(name: "", overview: "", id: -1, poster_path: "", season_number: -1, episodes: []))
@@ -134,23 +127,7 @@ final class EpisodeViewController: BaseViewController {
                      .disposed(by: owner.disposeBag)
              })
              .disposed(by: disposeBag)
-        
-//        output.result
-//            .map { $0.episodes }
-//            .asDriver(onErrorJustReturn: [])
-//            .drive(episodesTableView.rx.items(
-//                cellIdentifier: EpisodeTableViewCell.identifier,
-//                cellType: EpisodeTableViewCell.self)) {(row, element, cell) in
-//                    cell.bindData(with: element)
-//                    self.loadData(with: element)
-//                }
-//            .disposed(by: disposeBag)
-   
-//        episodesTableView.rx.itemSelected
-//            .subscribe(onNext: { [weak self] indexPath in
-//                self?.episodesTableView.deselectRow(at: indexPath, animated: true)
-//            })
-//            .disposed(by: disposeBag)
+
     }
     
     

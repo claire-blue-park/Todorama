@@ -61,7 +61,6 @@ final class PosterCollectionViewCell: UICollectionViewCell {
             let url = URL(string: imageBase + imageName)
             imageView.kf.setImage(with: url)
         } else {
-            //imageView.image = UIImage(systemName: "star")
             imageView.isHidden = true
             emptyLabel.text = title
         }

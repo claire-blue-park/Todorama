@@ -32,7 +32,7 @@ final class RateViewModel: BaseViewModel {
     }
     func transform(input: Input) -> Output {
         let sections = rateData.map { data in
-            [SectionModel(model: "", items: data.map { AnyHashable($0) })]}
+            [SectionModel(model: Strings.Global.empty.text, items: data.map { AnyHashable($0) })]}
 
         input.sortButtonTapped.bind(with: self) { owner, status in
             guard let status else {return}

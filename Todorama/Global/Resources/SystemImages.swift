@@ -50,7 +50,7 @@ enum SystemImages {
     }
     
     var image: UIImage {
-        UIImage(systemName: self.name) ?? UIImage(named: "")!
+        UIImage(systemName: self.name) ?? UIImage(named: Strings.Global.empty.text)!
     }
     
     enum chevron {
@@ -73,7 +73,7 @@ enum SystemImages {
         }
         
         var image: UIImage {
-            UIImage(systemName: self.name) ?? UIImage(named: "")!
+            UIImage(systemName: self.name) ?? UIImage(named: Strings.Global.empty.text)!
         }
     }
         

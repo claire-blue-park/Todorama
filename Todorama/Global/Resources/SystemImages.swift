@@ -8,13 +8,6 @@
 import UIKit
 
 enum SystemImages {
-    case star
-    case plus
-    case check
-    case eye
-    case pencil
-    case heart
-    
     enum tab {
         case houseICON
         case magnifICON
@@ -32,10 +25,20 @@ enum SystemImages {
         }
     }
     
+    case star
+    case starRate
+    case plus
+    case check
+    case eye
+    case pencil
+    case heart
+    
     var name: String {
         switch self {
         case .star:
             "star.circle.fill"
+        case .starRate:
+            "star.fill"
         case .plus:
             "plus.circle.fill"
         case .check:
@@ -45,7 +48,7 @@ enum SystemImages {
         case .pencil:
             "square.and.pencil.circle.fill"
         case .heart:
-            "heart.fill"
+            "heart.circle.fill"
         }
     }
     

@@ -81,6 +81,7 @@ final class ArchiveViewModel: BaseViewModel {
     private let watchingCount = BehaviorRelay<Int>(value: 0)
     private let watchedCount = BehaviorRelay<Int>(value: 0)
     private let commentCount = BehaviorRelay<Int>(value: 0)
+    private let rateCount = BehaviorRelay<Int>(value: 0)
     
     struct Input {
         let viewDidLoad: Observable<Void>
@@ -92,6 +93,7 @@ final class ArchiveViewModel: BaseViewModel {
         let watchingCount: Driver<Int>
         let watchedCount: Driver<Int>
         let commentCount: Driver<Int>
+        let rateCount: Driver<Int>
     }
     
     func transform(input: Input) -> Output {
@@ -117,6 +119,11 @@ final class ArchiveViewModel: BaseViewModel {
             return self.fetchCommentItems()
         }
         
+        let rateItems = input.viewDidLoad.flatMap { [weak self] _ -> Observable<[ContentModel]> in
+            guard let self = self else { return Observable.just([]) }
+            return self.fetchRateItems()
+        }
+        
         // 각 항목의 카운트 업데이트
         wishListItems
             .map { $0.count }
@@ -132,11 +139,17 @@ final class ArchiveViewModel: BaseViewModel {
             .map { $0.count }
             .bind(to: watchingCount)
             .disposed(by: disposeBag)
-            
+        
         commentItems
             .map { $0.count }
             .bind(to: commentCount)
             .disposed(by: disposeBag)
+        
+        rateItems
+            .map { $0.count }
+            .bind(to: rateCount)
+            .disposed(by: disposeBag)
+        
         
         // 섹션 데이터 결합
         let sectionModels = Observable.combineLatest(
@@ -155,11 +168,40 @@ final class ArchiveViewModel: BaseViewModel {
             wishListCount: wishListCount.asDriver(),
             watchingCount: watchingCount.asDriver(),
             watchedCount: watchedCount.asDriver(),
-            commentCount: commentCount.asDriver()
+            commentCount: commentCount.asDriver(),
+            rateCount: rateCount.asDriver()
         )
     }
     
     // WishList 항목 가져오기
+    private func fetchRateItems() -> Observable<[ContentModel]> {
+        let ratingItems = repository.fetchAll() as Results<Rating>
+        
+        var contentModels: [ContentModel] = []
+        for item in ratingItems {
+            if let drama = item.drama {
+                contentModels.append(ContentModel(
+                    id: drama.dramaId,
+                    title: drama.name,
+                    category: GenreManager.shared.getGenre(drama.genre) ?? "",
+                    imageURL: drama.backdropPath,
+                    progress: 0.0  // 별점은 진행률 표시 안함
+                ))
+            }
+        }
+        
+        // 데이터가 없으면 목 데이터 반환 - 실제 TMDB ID 사용
+        if contentModels.isEmpty {
+            contentModels = [
+                ContentModel(id: 1399, title: "왕좌의 게임", category: "드라마", imageURL: "/abcdef", progress: 0.0),
+                ContentModel(id: 71912, title: "엘리멘탈", category: "애니메이션", imageURL: "/ghijkl", progress: 0.0),
+                ContentModel(id: 94605, title: "월요일이 사라졌다", category: "스릴러", imageURL: "/mnopqr", progress: 0.0)
+            ]
+        }
+        
+        return Observable.just(contentModels)
+    }
+    
     private func fetchWishListItems() -> Observable<[ContentModel]> {
         let wishListItems = repository.fetchAll() as Results<WishList>
         

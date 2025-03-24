@@ -19,7 +19,7 @@ final class CommentTableViewCell: UITableViewCell {
     private let dateLabel = UILabel()
     
     // 검색어 하이라이트를 위한 속성
-    private var currentQuery: String = ""
+    private var currentQuery: String = Strings.Global.empty.text
     
     // MARK: - Initializers
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -108,7 +108,7 @@ final class CommentTableViewCell: UITableViewCell {
     }
     
     // MARK: - Cell Configuration
-    func configure(with item: CommentItem, searchQuery: String = "") {
+    func configure(with item: CommentItem, searchQuery: String = Strings.Global.empty.text) {
         self.currentQuery = searchQuery.lowercased()
         
         // 제목과 코멘트에 검색어 하이라이트 적용
@@ -168,6 +168,6 @@ final class CommentTableViewCell: UITableViewCell {
         commentLabel.text = nil
         commentLabel.attributedText = nil
         dateLabel.text = nil
-        currentQuery = ""
+        currentQuery = Strings.Global.empty.text
     }
 }

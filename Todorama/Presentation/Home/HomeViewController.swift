@@ -34,6 +34,10 @@ class HomeViewController: BaseViewController {
             make.width.equalTo(scrollView)
         }
     }
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.navigationBar.isHidden = false
+    }
     override func configureView() {
         navigationController?.navigationBar.isHidden = true
         collectionView.register(PosterCollectionViewCell.self, forCellWithReuseIdentifier: PosterCollectionViewCell.identifier)

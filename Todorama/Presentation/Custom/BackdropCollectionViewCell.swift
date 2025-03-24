@@ -10,7 +10,7 @@ import SnapKit
 import Kingfisher
 
 class BackdropCollectionViewCell: UICollectionViewCell {
-    
+
     private let backdropImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -22,10 +22,15 @@ class BackdropCollectionViewCell: UICollectionViewCell {
     private let genreLabel = UILabel()
     private let progressView = CustomProgressView() // 프로그레스 뷰 추가
     private let emptyTitleLabel = UILabel() // 이미지가 없을 때 제목 표시용 label 추가
+    private let gradientLayer = CAGradientLayer()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         configureView()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     private func configureView() {
@@ -40,8 +45,10 @@ class BackdropCollectionViewCell: UICollectionViewCell {
         emptyTitleLabel.textAlignment = .center
         emptyTitleLabel.numberOfLines = 2
         emptyTitleLabel.isHidden = true // 기본적으로 숨김
+        
         backdropImageView.layer.cornerRadius = 8
         backdropImageView.clipsToBounds = true
+        
         setupLayout()
         
         titleLabel.dramaTitleStyle()
@@ -52,7 +59,8 @@ class BackdropCollectionViewCell: UICollectionViewCell {
         progressView.trackTintColor = .tdGray
         progressView.isHidden = true // 기본적으로 숨김 처리
         
-        
+        // 그라데이션 설정
+        setupGradient()
     }
     
     private func setupLayout() {
@@ -88,8 +96,21 @@ class BackdropCollectionViewCell: UICollectionViewCell {
         }
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    private func setupGradient() {
+        gradientLayer.colors = [
+            UIColor.clear.cgColor,
+            UIColor.black.withAlphaComponent(0.6).cgColor
+        ]
+        gradientLayer.locations = [0.6, 1.0]
+        
+        // 이미지뷰에 그라데이션 레이어 추가
+        backdropImageView.layer.insertSublayer(gradientLayer, at: 0)
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        // 그라데이션 레이어 프레임 업데이트
+        gradientLayer.frame = backdropImageView.bounds
     }
     
     func configure(item: BackDrop? = nil) {
@@ -103,20 +124,22 @@ class BackdropCollectionViewCell: UICollectionViewCell {
     private func configure(item: BackDrop? = nil, progress: Float = 0.0, showProgress: Bool = false) {
         emptyTitleLabel.isHidden = true
         backdropImageView.isHidden = false
+        gradientLayer.isHidden = false
         
         if let item {
             titleLabel.text = item.name
             genreLabel.text = item.genre
             
             if let imagePath = item.imagePath, !imagePath.isEmpty {
-                // TMDBRequest의 ImageSize enum 활용
-                let fullUrl = ImageSize.poster154(url: imagePath).fullUrl
-                let url = URL(string: fullUrl)
+                // 이미지 URL 생성
+                let imageBase = "https://image.tmdb.org/t/p/w500"
+                let url = URL(string: imageBase + imagePath)
                 
                 backdropImageView.kf.setImage(with: url, placeholder: UIImage(systemName: "film"), options: nil, completionHandler: { result in
                     switch result {
                     case .success(_):
                         // 이미지 로드 성공
+                        self.backdropImageView.contentMode = .scaleAspectFill
                         break
                     case .failure(_):
                         // 이미지 로드 실패 시 제목 표시
@@ -128,10 +151,7 @@ class BackdropCollectionViewCell: UICollectionViewCell {
                 showEmptyState(with: item.name)
             }
         } else {
-            backdropImageView.image = UIImage(systemName: "film")
-            backdropImageView.contentMode = .scaleAspectFit
-            backdropImageView.tintColor = .white
-            titleLabel.text = "title"
+            showEmptyState(with: "title")
             genreLabel.text = "Genre"
         }
         
@@ -149,5 +169,27 @@ class BackdropCollectionViewCell: UICollectionViewCell {
         backdropImageView.backgroundColor = .tdDarkGray
         emptyTitleLabel.isHidden = false
         emptyTitleLabel.text = title
+        gradientLayer.isHidden = true // 그라데이션 숨김
+    }
+    
+    // 진행률만 따로 설정하는 메서드 추가
+    func setProgress(_ progress: Float) {
+        if progress > 0 && progress < 1 {
+            progressView.isHidden = false
+            progressView.setProgress(progress, animated: true)
+        } else {
+            progressView.isHidden = true
+        }
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        backdropImageView.image = nil
+        backdropImageView.backgroundColor = .clear
+        titleLabel.text = nil
+        genreLabel.text = nil
+        emptyTitleLabel.isHidden = true
+        progressView.isHidden = true
+        progressView.setProgress(0, animated: false)
     }
 }

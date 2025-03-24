@@ -35,6 +35,9 @@ class RateViewController: BaseViewController {
         navTitleView.text = Strings.NavTitle.rate.text
         navTitleView.navTitleStyle()
         navigationItem.titleView = navTitleView
+        navigationController?.navigationBar.topItem?.backButtonTitle = Strings.Global.empty.text
+        navigationController?.navigationBar.tintColor = .tdMain
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
         configureSortButton()
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: sortButton)
         

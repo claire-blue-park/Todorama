@@ -24,7 +24,7 @@ struct CommentItem {
         self.title = realmComment.drama?.name ?? "알 수 없는 드라마"
         self.posterPath = realmComment.drama?.backdropPath
         self.comment = realmComment.comment
-        self.synopsis = "" // 실제로는 Drama 객체에서 가져와야 함
+        self.synopsis = Strings.Global.empty.text // 실제로는 Drama 객체에서 가져와야 함
         self.date = Date() // 실제로는 저장된 날짜 필드 사용 필요
     }
     
@@ -74,7 +74,7 @@ final class CommentViewModel: BaseViewModel {
             .share()
         
         // 2. 데이터 로드 (뷰 로드 시점 + 검색어 변경 시)
-        let initialLoad = input.viewDidLoad.map { "" }
+        let initialLoad = input.viewDidLoad.map { Strings.Global.empty.text }
         let searchTextTrigger = Observable.merge(initialLoad, searchText)
         
         // 3. 데이터 흐름 생성 (지금은 목 데이터)

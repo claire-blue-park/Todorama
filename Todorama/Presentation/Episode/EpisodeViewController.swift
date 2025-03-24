@@ -104,30 +104,25 @@ final class EpisodeViewController: BaseViewController {
         let input = EpisodeViewModel.Input()
         let output = viewModel.transform(input: input)
 
-        buttonStackView.commentButtonTapped
-                    .subscribe(onNext: { [weak self] in
-                        let controller = EditingCommentViewController()
-                        self?.navigationController?.pushViewController(controller, animated: true)
-                    })
-                    .disposed(by: disposeBag)
-        
         output.result
             .asDriver(onErrorJustReturn: SeasonDetail(name: "", overview: "", id: -1, poster_path: "", season_number: -1, episodes: []))
-             .drive(with: self, onNext: { owner, detail in
-                 owner.loadData(with: detail)
-                 
-                 // 시즌 방출 -> 컬렉션 뷰
-                 Observable.just(detail.episodes)
-                     .asDriver(onErrorJustReturn: [])
-                     .drive(owner.episodesTableView.rx.items(
-                        cellIdentifier: EpisodeTableViewCell.identifier,
-                         cellType: EpisodeTableViewCell.self)) {(row, element, cell) in
-                             cell.bindData(with: element)
-                         }
-                     .disposed(by: owner.disposeBag)
-             })
-             .disposed(by: disposeBag)
-
+            .drive(with: self, onNext: { owner, detail in
+                owner.dramaTitleLabel.text = detail.name
+                owner.episodeCountLabel.text = "\(detail.season_number)\(Strings.Unit.count.text) \(Strings.Global.episode.text)"
+                owner.synopsisLabel.text = detail.overview
+                if let posterPath = detail.poster_path {
+                    owner.posterView.kf.setImage(with: URL(string: ImageSize.poster185(url: posterPath).fullUrl))
+                }
+            })
+            .disposed(by: disposeBag)
+        
+        output.result
+            .map { $0.episodes }
+            .asDriver(onErrorJustReturn: [])
+            .drive(episodesTableView.rx.items(cellIdentifier: EpisodeTableViewCell.identifier, cellType: EpisodeTableViewCell.self)) { row, episode, cell in
+                cell.bindData(with: episode)
+            }
+            .disposed(by: disposeBag)
     }
     
     

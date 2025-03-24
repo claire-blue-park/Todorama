@@ -15,9 +15,9 @@ struct BackDrop {
     init(modelType: BackDropModel) {
         self.name = modelType.name
         self.imagePath = modelType.backdrop_path
-        var genreStr = ""
+        var genreStr = Strings.Global.empty.text
         if let genreId = modelType.genre_ids.first {
-            genreStr = GenreManager.shared.getGenre(genreId) ?? ""
+            genreStr = GenreManager.shared.getGenre(genreId) ?? Strings.Global.empty.text
         }
         self.genre = genreStr
     }

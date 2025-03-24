@@ -32,6 +32,7 @@ final class EpisodeViewModel: BaseViewModel {
         let result = PublishSubject<SeasonDetail>()
         
         NetworkManager.shared.callRequest(target: .episode(id: id, season: season), model: SeasonDetail.self)
+            .share(replay: 1, scope: .whileConnected)
             .subscribe(with: self) { owner, response in
                 result.onNext(response)
             }

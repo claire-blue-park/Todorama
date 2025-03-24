@@ -17,7 +17,7 @@ final class CommentViewController: BaseViewController {
     private let disposeBag = DisposeBag()
     
     // 현재 검색어를 저장하는 프로퍼티
-    private var currentSearchQuery = BehaviorRelay<String>(value: "")
+    private var currentSearchQuery = BehaviorRelay<String>(value: Strings.Global.empty.text)
     
     // MARK: - UI Components
     private let searchContainerView = UIView()
@@ -38,6 +38,11 @@ final class CommentViewController: BaseViewController {
     // MARK: - Setup
     private func setupNavigation() {
         navigationItem.title = Strings.NavTitle.comment.text
+        navigationController?.navigationBar.topItem?.backButtonTitle = Strings.Global.empty.text
+        navigationController?.navigationBar.tintColor = .tdMain
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        
+        
     }
     
     // MARK: - BaseViewController Methods
@@ -193,8 +198,8 @@ final class CommentViewController: BaseViewController {
         // 취소 버튼 탭 처리
         output.clearSearchText
             .drive(onNext: { [weak self] _ in
-                self?.searchBar.text = ""
-                self?.currentSearchQuery.accept("")
+                self?.searchBar.text = Strings.Global.empty.text
+                self?.currentSearchQuery.accept(Strings.Global.empty.text)
                 self?.searchBar.resignFirstResponder()
             })
             .disposed(by: disposeBag)
@@ -203,7 +208,7 @@ final class CommentViewController: BaseViewController {
         tableView.rx.modelSelected(CommentItem.self)
             .subscribe(onNext: { [weak self] comment in
                 print("Selected comment: \(comment.title)")
-                // TODO: 상세 화면으로 이동
+                // 채현님이 만든 코멘트 수정 뷰로 이동하도록 추후 수정
             })
             .disposed(by: disposeBag)
     }

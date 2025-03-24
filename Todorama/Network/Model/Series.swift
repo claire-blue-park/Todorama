@@ -31,6 +31,14 @@ struct Network: Decodable {
     let name: String
 }
 
+struct NetworkDetail: Decodable {
+    let id: Int
+    let homepage: String
+    let logo_path: String
+    let name: String
+    let origin_country: String
+}
+
 struct Season: Decodable {
     let id: Int
     let air_date: String?

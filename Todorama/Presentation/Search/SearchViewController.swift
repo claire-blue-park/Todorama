@@ -22,14 +22,23 @@ class SearchViewController: BaseViewController {
         searchBar.becomeFirstResponder()
     }
     override func bind() {
-        let input = SearchViewModel.Input(cancelButtonTapped: cancelButton.rx.tap, searchButtonTapped: searchBar.rx.searchButtonClicked.withLatestFrom(searchBar.rx.text.orEmpty), prefetchItem: collectionView.rx.prefetchItems)
+        let scrollEvent = collectionView.rx.didScroll
+            .map { [weak self] in self?.collectionView }
+            .compactMap { $0 }
+            .filter { collectionView in
+                let offsetY = collectionView.contentOffset.y
+                let contentHeight = collectionView.contentSize.height
+                let frameHeight = collectionView.frame.size.height
+                return offsetY > contentHeight - frameHeight - 100
+            }
+            .map { _ in }
+        let input = SearchViewModel.Input(cancelButtonTapped: cancelButton.rx.tap, searchButtonTapped: searchBar.rx.searchButtonClicked.withLatestFrom(searchBar.rx.text.orEmpty), scrollTrigger: scrollEvent)
         let output = viewModel.transform(input: input)
-        
         output.resignKeyboardTrigger.drive(with: self) { owner, _ in
             owner.view.endEditing(true)
         }.disposed(by: disposeBag)
         output.cancelButtonTapped.drive(with: self) { owner, _ in
-            owner.searchBar.text = ""
+            owner.searchBar.text = Strings.Global.empty.text
             owner.view.endEditing(true)
         }.disposed(by: disposeBag)
         let dataSource = RxCollectionViewSectionedReloadDataSource<SectionModel<String, AnyHashable>>( configureCell: { dataSource, collectionView, indexPath, item in
@@ -96,7 +105,4 @@ class SearchViewController: BaseViewController {
 
         return layout
     }
-
-
-
 }

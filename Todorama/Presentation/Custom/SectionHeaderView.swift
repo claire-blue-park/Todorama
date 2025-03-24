@@ -11,7 +11,7 @@ import SnapKit
 final class SectionHeaderView: UICollectionReusableView {
     static let reuseIdentifier = "SectionHeaderView"
 
-    private let titleView = SectionTitleView(title: "")
+    private let titleView = SectionTitleView(title: Strings.Global.empty.text)
     override init(frame: CGRect) {
         super.init(frame: frame)
         configureView()

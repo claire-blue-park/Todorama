@@ -42,11 +42,6 @@ final class SeriesCollectionViewCell: UICollectionViewCell {
         posterImageView.layer.cornerRadius = 4
     }
     
-    private func configureLabels() {
-        titleLabel.dramaTitleStyle()
-        episodeCountLabel.textStyle()
-    }
-    
     private func setupConstraints() {
         posterImageView.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
@@ -63,7 +58,15 @@ final class SeriesCollectionViewCell: UICollectionViewCell {
             make.top.equalTo(titleLabel.snp.bottom).offset(4)
             make.centerX.equalToSuperview()
             make.leading.trailing.equalToSuperview().inset(4)
+            make.bottom.equalToSuperview().offset(-8)
         }
+    }
+
+    private func configureLabels() {
+        titleLabel.dramaTitleStyle()
+        titleLabel.numberOfLines = 1
+        episodeCountLabel.textStyle()
+        episodeCountLabel.numberOfLines = 1
     }
     
     func bindData(with season: Season) {

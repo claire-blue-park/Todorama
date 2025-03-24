@@ -11,7 +11,8 @@ import RxSwift
 
 final class SeriesViewModel: BaseViewModel {
     let disposeBag = DisposeBag()
-    let id: Int?
+    
+    let id: Int
     
     init(id: Int) {
         self.id = id
@@ -28,7 +29,7 @@ final class SeriesViewModel: BaseViewModel {
     func transform(input: Input) -> Output {
         let result = PublishSubject<Series>()
         
-        NetworkManager.shared.callRequest(target: .series(id: self.id ?? -1), model: Series.self)
+        NetworkManager.shared.callRequest(target: .series(id: self.id), model: Series.self)
             .subscribe(with: self) { owner, response in
                 result.onNext(response)
             }

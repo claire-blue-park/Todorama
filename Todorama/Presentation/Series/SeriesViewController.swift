@@ -42,30 +42,51 @@ final class SeriesViewController: BaseViewController {
         let input = SeriesViewModel.Input()
         let output = viewModel.transform(input: input)
         
-        output.result.subscribe(with: self) { owner, series in
-            owner.updateUI(with: series)
-            print(series)
-        }.disposed(by: disposeBag)
-        
-        output.result
-            .map { $0.seasons }
-            .asDriver(onErrorJustReturn: [])
-            .drive(seriesCollectionView.rx.items(
-                cellIdentifier: SeriesCollectionViewCell.identifier,
-                cellType: SeriesCollectionViewCell.self)) {(row, element, cell) in
+        let defaultSeries = Series(id: -1, name: "", backdrop_path: "", number_of_seasons: -1, status: "", genres: [], overview: "", seasons: [], networks: [])
 
-                cell.bindData(with: element)
-            }
-            .disposed(by: disposeBag)
+        output.result
+             .asDriver(onErrorJustReturn: defaultSeries)
+             .drive(with: self, onNext: { owner, series in
+                 owner.loadData(with: series)
+                 
+                 // 시즌 방출 -> 컬렉션 뷰
+                 Observable.just(series.seasons)
+                     .asDriver(onErrorJustReturn: [])
+                     .drive(owner.seriesCollectionView.rx.items(
+                         cellIdentifier: SeriesCollectionViewCell.identifier,
+                         cellType: SeriesCollectionViewCell.self)) {(row, element, cell) in
+                             cell.bindData(with: element)
+                         }
+                     .disposed(by: owner.disposeBag)
+             })
+             .disposed(by: disposeBag)
+        
+//        output.result
+//            .asDriver(onErrorJustReturn: defaultSeries)
+//            .drive(with: self, onNext: { owner, series in
+//                owner.loadData(with: series)
+//            })
+//            .disposed(by: disposeBag)
+//        
+//        output.result
+//            .map { $0.seasons }
+//            .asDriver(onErrorJustReturn: [])
+//            .drive(seriesCollectionView.rx.items(
+//                cellIdentifier: SeriesCollectionViewCell.identifier,
+//                cellType: SeriesCollectionViewCell.self)) {(row, element, cell) in
+//
+//                cell.bindData(with: element)
+//            }
+//            .disposed(by: disposeBag)
 
     }
     
-    private func updateUI(with series: Series) {
+    private func loadData(with series: Series) {
         if let image = series.backdrop_path {
             backdropView.kf.setImage(with: URL(string: ImageSize.backdrop780(url: image).fullUrl))
         }
         dramaTitleLabel.text = series.name
-        infoLabel.text = "\(Strings.Global.season.text) \(series.number_of_seasons)\(Strings.Global.countUnit.text) · \(series.status) · \(series.genres[0].name)"
+        infoLabel.text = "\(Strings.Global.season.text) \(series.number_of_seasons)\(Strings.Unit.count.text) · \(series.status) · \(series.genres[0].name)"
         synopsisLabel.text = series.overview
         
         seriesCollectionView.reloadData()
@@ -133,15 +154,9 @@ final class SeriesViewController: BaseViewController {
         linkButton.setTitle("보러가기", for: .normal)
         linkButton.titleLabel?.textStyle()
     
-        configureCollectionViews()
-    }
-    
-    
-    private func configureCollectionViews() {
         seriesCollectionView.backgroundColor = .clear
         seriesCollectionView.showsHorizontalScrollIndicator = false
         seriesCollectionView.register(SeriesCollectionViewCell.self, forCellWithReuseIdentifier: "SeriesCollectionViewCell")
-
     }
     
     private func createRelatedSeriesLayout() -> UICollectionViewLayout {

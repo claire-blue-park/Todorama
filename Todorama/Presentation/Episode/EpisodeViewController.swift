@@ -19,11 +19,12 @@ final class EpisodeViewController: BaseViewController {
     private var episodeCountLabel = UILabel()
     private let synopsisLabel = UILabel()
     private let episodesSectionTitleView = SectionTitleView(title: Strings.SectionTitle.episode.text)
-    private lazy var episodesTableView = UITableView()
-    private let buttonStackView = ButtonStack()
+    private let episodesTableView = UITableView()
     
-    init(id: Int, season: Int) {
-        self.viewModel = EpisodeViewModel(id: id, season: season)
+    private lazy var buttonStackView = ButtonStack(drama: Drama())
+    
+    init(series: Series, season: Int) {
+        self.viewModel = EpisodeViewModel(series: series, season: season)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -117,11 +118,19 @@ final class EpisodeViewController: BaseViewController {
             .disposed(by: disposeBag)
         
         output.result
-            .map { $0.episodes }
-            .asDriver(onErrorJustReturn: [])
-            .drive(episodesTableView.rx.items(cellIdentifier: EpisodeTableViewCell.identifier, cellType: EpisodeTableViewCell.self)) { row, episode, cell in
-                cell.bindData(with: episode)
-            }
+                .map { $0.episodes }
+                .asDriver(onErrorJustReturn: [])
+                .drive(episodesTableView.rx.items(cellIdentifier: EpisodeTableViewCell.identifier, cellType: EpisodeTableViewCell.self)) { [weak self] row, episode, cell in
+                    guard let self = self else { return }
+                    cell.bindData(with: episode, dramaId: self.viewModel.series.id)
+                }
+                .disposed(by: disposeBag)
+        
+        buttonStackView.commentButtonTapped
+            .subscribe(with: self, onNext: { owner, _ in
+                let controller = EditingCommentViewController()
+                owner.navigationController?.pushViewController(controller, animated: true)
+            })
             .disposed(by: disposeBag)
     }
     

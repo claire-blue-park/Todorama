@@ -12,11 +12,11 @@ import RxSwift
 final class EpisodeViewModel: BaseViewModel {
     let disposeBag = DisposeBag()
     
-    let id: Int
+    let series: Series
     let season: Int
     
-    init(id: Int, season: Int) {
-        self.id = id
+    init(series: Series, season: Int) {
+        self.series = series
         self.season = season
     }
     
@@ -31,7 +31,7 @@ final class EpisodeViewModel: BaseViewModel {
     func transform(input: Input) -> Output {
         let result = PublishSubject<SeasonDetail>()
         
-        NetworkManager.shared.callRequest(target: .episode(id: id, season: season), model: SeasonDetail.self)
+        NetworkManager.shared.callRequest(target: .episode(id: series.id, season: season), model: SeasonDetail.self)
             .share(replay: 1, scope: .whileConnected)
             .subscribe(with: self) { owner, response in
                 result.onNext(response)

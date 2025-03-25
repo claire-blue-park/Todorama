@@ -39,6 +39,7 @@ final class SeriesViewController: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
     }
     
     override func bind() {
@@ -81,7 +82,9 @@ final class SeriesViewController: BaseViewController {
             .subscribe(onNext: { [weak self] indexPath, series in
                 guard indexPath.row < series.seasons.count else { return }
                 let selectedSeason = series.seasons[indexPath.row]
-                let controller = EpisodeViewController(id: series.id, season: selectedSeason.season_number)
+                
+                let controller = EpisodeViewController(series: series,
+                                                       season: selectedSeason.season_number)
                 self?.navigationController?.pushViewController(controller, animated: true)
             })
             .disposed(by: disposeBag)

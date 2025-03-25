@@ -85,6 +85,7 @@ final class ArchiveViewModel: BaseViewModel {
     
     struct Input {
         let viewDidLoad: Observable<Void>
+        let viewWillAppear: Observable<Void>
     }
     
     struct Output {
@@ -98,28 +99,33 @@ final class ArchiveViewModel: BaseViewModel {
     
     func transform(input: Input) -> Output {
         
-        // Realm에서 데이터 가져오기
-        let wishListItems = input.viewDidLoad.flatMap { [weak self] _ -> Observable<[ContentModel]> in
+        let loadTrigger = Observable.merge(
+            input.viewDidLoad,
+            input.viewWillAppear
+        )
+        
+        // Realm에서 데이터 가져오기 - 트리거 변경
+        let wishListItems = loadTrigger.flatMap { [weak self] _ -> Observable<[ContentModel]> in
             guard let self = self else { return Observable.just([]) }
             return self.fetchWishListItems()
         }
         
-        let watchedItems = input.viewDidLoad.flatMap { [weak self] _ -> Observable<[ContentModel]> in
+        let watchedItems = loadTrigger.flatMap { [weak self] _ -> Observable<[ContentModel]> in
             guard let self = self else { return Observable.just([]) }
             return self.fetchWatchedItems()
         }
         
-        let watchingItems = input.viewDidLoad.flatMap { [weak self] _ -> Observable<[ContentModel]> in
+        let watchingItems = loadTrigger.flatMap { [weak self] _ -> Observable<[ContentModel]> in
             guard let self = self else { return Observable.just([]) }
             return self.fetchWatchingItems()
         }
         
-        let commentItems = input.viewDidLoad.flatMap { [weak self] _ -> Observable<[ContentModel]> in
+        let commentItems = loadTrigger.flatMap { [weak self] _ -> Observable<[ContentModel]> in
             guard let self = self else { return Observable.just([]) }
             return self.fetchCommentItems()
         }
         
-        let rateItems = input.viewDidLoad.flatMap { [weak self] _ -> Observable<[ContentModel]> in
+        let rateItems = loadTrigger.flatMap { [weak self] _ -> Observable<[ContentModel]> in
             guard let self = self else { return Observable.just([]) }
             return self.fetchRateItems()
         }

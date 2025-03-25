@@ -31,6 +31,7 @@ enum SystemImages {
     case check
     case eye
     case pencil
+    case heartLine
     case heart
     
     var name: String {
@@ -47,6 +48,8 @@ enum SystemImages {
             "eye.circle.fill"
         case .pencil:
             "square.and.pencil.circle.fill"
+        case .heartLine:
+            "heart"
         case .heart:
             "heart.fill"
         }

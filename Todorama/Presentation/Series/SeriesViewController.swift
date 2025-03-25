@@ -18,6 +18,8 @@ final class SeriesViewController: BaseViewController {
     
     private let scrollView = UIScrollView()
     private let contentView = UIView()
+    
+    private let wishButton = WishButton()
     private let backdropView = UIImageView()
     private let dramaTitleLabel = UILabel()
     private let infoLabel = UILabel()
@@ -46,7 +48,7 @@ final class SeriesViewController: BaseViewController {
         let output = viewModel.transform(input: input)
         
         let defaultSeries = Series(id: -1, name: "", backdrop_path: "", number_of_seasons: -1, status: "", genres: [], overview: "", seasons: [], networks: [])
-        
+    
         output.result
             .asDriver(onErrorJustReturn: defaultSeries)
             .drive(with: self, onNext: { owner, series in
@@ -58,6 +60,9 @@ final class SeriesViewController: BaseViewController {
                 if let backdropPath = series.backdrop_path {
                     owner.backdropView.kf.setImage(with: URL(string: ImageSize.backdrop780(url: backdropPath).fullUrl))
                 }
+                
+                // 보고싶어요 버튼
+                owner.wishButton.setSeries(series: series)
                 
                 // 네트워크 버튼 업데이트
                 if let network = series.networks.first {
@@ -81,7 +86,10 @@ final class SeriesViewController: BaseViewController {
             .subscribe(onNext: { [weak self] indexPath, series in
                 guard indexPath.row < series.seasons.count else { return }
                 let selectedSeason = series.seasons[indexPath.row]
-                let controller = EpisodeViewController(id: series.id, season: selectedSeason.season_number)
+                
+                let controller = EpisodeViewController(series: series,
+                                                       season: selectedSeason.season_number,
+                                                       seasonId: selectedSeason.id)
                 self?.navigationController?.pushViewController(controller, animated: true)
             })
             .disposed(by: disposeBag)
@@ -95,39 +103,7 @@ final class SeriesViewController: BaseViewController {
             })
             .disposed(by: disposeBag)
     }
-    
-    private func presentWebView(with urlString: String) {
-        guard let url = URL(string: urlString), !urlString.isEmpty else {
-            print("Invalid URL: \(urlString)")
-            return
-        }
-        
-        let webView = WKWebView()
-        let webViewController = UIViewController()
-        webViewController.view = webView
-        webView.load(URLRequest(url: url))
-        
-        let navController = UINavigationController(rootViewController: webViewController)
-        webViewController.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(dismissWebView))
-        present(navController, animated: true, completion: nil)
-    }
-    @objc private func dismissWebView() {
-        dismiss(animated: true, completion: nil)
-    }
-    
-    private func createRelatedSeriesLayout() -> UICollectionViewLayout {
-        return UICollectionViewCompositionalLayout { _, _ in
-            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1))
-            let item = NSCollectionLayoutItem(layoutSize: itemSize)
-            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.4), heightDimension: .fractionalHeight(1))
-            let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, repeatingSubitem: item, count: 1)
-            let section = NSCollectionLayoutSection(group: group)
-            section.orthogonalScrollingBehavior = .continuous
-            section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12)
-            section.interGroupSpacing = 8
-            return section
-        }
-    }
+
     
     private func loadData(with series: Series) {
         if let image = series.backdrop_path {
@@ -146,7 +122,7 @@ final class SeriesViewController: BaseViewController {
     override func configureHierarchy() {
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
-        [backdropView, dramaTitleLabel, infoLabel, synopsisLabel, networkButtonView, infoSectionTitle, seriesCollectionView].forEach { item in
+        [backdropView, wishButton, dramaTitleLabel, infoLabel, synopsisLabel, networkButtonView, infoSectionTitle, seriesCollectionView].forEach { item in
             contentView.addSubview(item)
         }
     }
@@ -170,6 +146,12 @@ final class SeriesViewController: BaseViewController {
         dramaTitleLabel.snp.makeConstraints { make in
             make.top.equalTo(backdropView.snp.bottom).offset(16)
             make.horizontalEdges.equalToSuperview().inset(12)
+        }
+        
+        wishButton.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().offset(-16)
+            make.size.equalTo(24)
+            make.centerY.equalTo(dramaTitleLabel)
         }
         
         infoLabel.snp.makeConstraints { make in
@@ -220,7 +202,48 @@ final class SeriesViewController: BaseViewController {
         
         seriesCollectionView.backgroundColor = .clear
         seriesCollectionView.showsHorizontalScrollIndicator = false
-        seriesCollectionView.register(SeriesCollectionViewCell.self, forCellWithReuseIdentifier: "SeriesCollectionViewCell")
+        seriesCollectionView.register(SeriesCollectionViewCell.self, forCellWithReuseIdentifier: SeriesCollectionViewCell.identifier)
     }
     
+}
+
+// MARK: - WebView
+extension SeriesViewController {
+    private func presentWebView(with urlString: String) {
+        guard let url = URL(string: urlString), !urlString.isEmpty else {
+            print("Invalid URL: \(urlString)")
+            return
+        }
+        
+        let webView = WKWebView()
+        let webViewController = UIViewController()
+        webViewController.view = webView
+        webView.load(URLRequest(url: url))
+        
+        let navController = UINavigationController(rootViewController: webViewController)
+        webViewController.navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(dismissWebView))
+        present(navController, animated: true, completion: nil)
+    }
+    
+    @objc private func dismissWebView() {
+        dismiss(animated: true, completion: nil)
+    }
+}
+
+// MARK: - Compositional
+extension SeriesViewController {
+    
+    private func createRelatedSeriesLayout() -> UICollectionViewLayout {
+        return UICollectionViewCompositionalLayout { _, _ in
+            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1))
+            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.4), heightDimension: .fractionalHeight(1))
+            let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, repeatingSubitem: item, count: 1)
+            let section = NSCollectionLayoutSection(group: group)
+            section.orthogonalScrollingBehavior = .continuous
+            section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12)
+            section.interGroupSpacing = 8
+            return section
+        }
+    }
 }

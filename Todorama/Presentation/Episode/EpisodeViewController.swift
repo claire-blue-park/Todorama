@@ -12,7 +12,6 @@ import SnapKit
 
 final class EpisodeViewController: BaseViewController {
     private let disposeBag = DisposeBag()
-//    private var series: Series
     private var viewModel: EpisodeViewModel
     
     private let posterView = UIImageView()
@@ -20,11 +19,10 @@ final class EpisodeViewController: BaseViewController {
     private var episodeCountLabel = UILabel()
     private let synopsisLabel = UILabel()
     private let episodesSectionTitleView = SectionTitleView(title: Strings.SectionTitle.episode.text)
-    private lazy var episodesTableView = UITableView()
-    private let buttonStackView = ButtonStack()
+    private let episodesTableView = UITableView()
     
-    init(id: Int, season: Int) {
-        self.viewModel = EpisodeViewModel(id: id, season: season)
+    init(series: Series, season: Int, seasonId: Int) {
+        self.viewModel = EpisodeViewModel(series: series, season: season, seasonId: seasonId)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -38,7 +36,7 @@ final class EpisodeViewController: BaseViewController {
     
     override func configureHierarchy() {
         [posterView, dramaTitleLabel, episodeCountLabel, synopsisLabel,
-         episodesSectionTitleView, buttonStackView, episodesTableView].forEach {
+         episodesSectionTitleView, episodesTableView].forEach {
             view.addSubview($0)
         }
     }
@@ -64,16 +62,10 @@ final class EpisodeViewController: BaseViewController {
             make.top.equalTo(episodeCountLabel.snp.bottom).offset(12)
             make.horizontalEdges.equalTo(dramaTitleLabel)
         }
-        
-        buttonStackView.snp.makeConstraints { make in
-            make.top.equalTo(posterView.snp.bottom).offset(24)
-            make.centerX.equalToSuperview()
-            make.height.equalTo(44)
-        }
-        
+
         episodesSectionTitleView.snp.makeConstraints { make in
             make.height.equalTo(44)
-            make.top.equalTo(buttonStackView.snp.bottom).offset(12)
+            make.top.equalTo(posterView.snp.bottom).offset(12)
             make.horizontalEdges.equalToSuperview()
         }
         
@@ -85,6 +77,8 @@ final class EpisodeViewController: BaseViewController {
     }
     
     override func configureView() {
+        navigationItem.title = viewModel.series.name
+        
         posterView.backgroundColor = .tdWhite
         posterView.layer.cornerRadius = 4
         posterView.contentMode = .scaleAspectFill
@@ -109,7 +103,7 @@ final class EpisodeViewController: BaseViewController {
             .asDriver(onErrorJustReturn: SeasonDetail(name: "", overview: "", id: -1, poster_path: "", season_number: -1, episodes: []))
             .drive(with: self, onNext: { owner, detail in
                 owner.dramaTitleLabel.text = detail.name
-                owner.episodeCountLabel.text = "\(detail.season_number)\(Strings.Unit.count.text) \(Strings.Global.episode.text)"
+                owner.episodeCountLabel.text = detail.season_number != 0 ? "\(detail.season_number)\(Strings.Unit.count.text) \(Strings.Global.episode.text)" : Strings.Global.empty.text
                 owner.synopsisLabel.text = detail.overview
                 if let posterPath = detail.poster_path {
                     owner.posterView.kf.setImage(with: URL(string: ImageSize.poster185(url: posterPath).fullUrl))
@@ -118,12 +112,18 @@ final class EpisodeViewController: BaseViewController {
             .disposed(by: disposeBag)
         
         output.result
-            .map { $0.episodes }
-            .asDriver(onErrorJustReturn: [])
-            .drive(episodesTableView.rx.items(cellIdentifier: EpisodeTableViewCell.identifier, cellType: EpisodeTableViewCell.self)) { row, episode, cell in
-                cell.bindData(with: episode)
-            }
-            .disposed(by: disposeBag)
+                .map { $0.episodes }
+                .asDriver(onErrorJustReturn: [])
+                .drive(episodesTableView.rx.items(cellIdentifier: EpisodeTableViewCell.identifier, cellType: EpisodeTableViewCell.self)) { [weak self] row, episode, cell in
+                    guard let self = self else { return }
+
+                    cell.bindData(with: episode,
+                                  dramaId: self.viewModel.series.id,
+                                  dramaName: self.viewModel.series.name,
+                                  seasonId: self.viewModel.seasonId)
+                }
+                .disposed(by: disposeBag)
+        
     }
     
     
@@ -139,7 +139,6 @@ final class EpisodeViewController: BaseViewController {
     }
     
     private func loadData(with seasonDetail: SeasonDetail) {
-
         dramaTitleLabel.text = seasonDetail.name
         episodeCountLabel.text = "\(seasonDetail.season_number)\(Strings.Unit.count.text) \(Strings.Global.episode.text)"
         synopsisLabel.text = seasonDetail.overview

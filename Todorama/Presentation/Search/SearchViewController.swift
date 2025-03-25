@@ -10,7 +10,7 @@ import RxSwift
 import RxCocoa
 import RxDataSources
 
-class SearchViewController: BaseViewController {
+final class SearchViewController: BaseViewController {
     let disposeBag = DisposeBag()
     let viewModel = SearchViewModel()
     let searchBar = UISearchBar()

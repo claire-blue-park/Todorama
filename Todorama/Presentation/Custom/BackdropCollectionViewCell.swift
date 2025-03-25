@@ -9,7 +9,7 @@ import UIKit
 import SnapKit
 import Kingfisher
 
-class BackdropCollectionViewCell: UICollectionViewCell {
+final class BackdropCollectionViewCell: UICollectionViewCell {
 
     private let backdropImageView: UIImageView = {
         let imageView = UIImageView()

@@ -10,7 +10,7 @@ import RxSwift
 import RxCocoa
 import RxDataSources
 
-class HomeViewModel: BaseViewModel {
+final class HomeViewModel: BaseViewModel {
     var disposeBag = DisposeBag()
     private(set) var internalData: InternalData
     let headerTitle = [Strings.SectionTitle.popularDrama.text, Strings.SectionTitle.similarContents.text]

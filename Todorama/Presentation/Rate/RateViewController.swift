@@ -10,7 +10,7 @@ import RxSwift
 import RxCocoa
 import RxDataSources
 
-class RateViewController: BaseViewController {
+final class RateViewController: BaseViewController {
     let disposeBag = DisposeBag()
     let viewModel = RateViewModel()
     let sortButton = UIButton()

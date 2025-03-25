@@ -48,7 +48,7 @@ enum SystemImages {
         case .pencil:
             "square.and.pencil.circle.fill"
         case .heart:
-            "heart.circle.fill"
+            "heart.fill"
         }
     }
     

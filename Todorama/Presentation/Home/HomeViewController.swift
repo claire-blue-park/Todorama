@@ -30,21 +30,19 @@ class HomeViewController: BaseViewController {
             make.edges.bottom.equalTo(view.safeAreaLayoutGuide)
         }
         collectionView.snp.makeConstraints { make in
-            make.verticalEdges.equalTo(view.safeAreaLayoutGuide)
+            make.top.equalTo(scrollView).offset(-44)
+            make.bottom.equalTo(view.safeAreaLayoutGuide)
             make.width.equalTo(scrollView)
         }
     }
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        navigationController?.navigationBar.isHidden = false
     }
     override func configureView() {
-        navigationController?.navigationBar.isHidden = true
         collectionView.register(PosterCollectionViewCell.self, forCellWithReuseIdentifier: PosterCollectionViewCell.identifier)
         collectionView.register(BackdropCollectionViewCell.self, forCellWithReuseIdentifier: BackdropCollectionViewCell.identifier)
 
         collectionView.register(SectionHeaderView.self,   forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: SectionHeaderView.reuseIdentifier)
-
     }
     func popularSectionLayout() -> NSCollectionLayoutSection {
         let itemSize = NSCollectionLayoutSize(

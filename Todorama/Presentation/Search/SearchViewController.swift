@@ -16,7 +16,7 @@ class SearchViewController: BaseViewController {
     let searchBar = UISearchBar()
     let cancelButton = UIButton()
     lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: createLayout())
-
+    let emptyLabel = UILabel()
     override func viewDidLoad() {
         super.viewDidLoad()
         searchBar.becomeFirstResponder()
@@ -50,8 +50,14 @@ class SearchViewController: BaseViewController {
             }
             return UICollectionViewCell()
         })
-        output.sections.bind(to: collectionView.rx.items(dataSource: dataSource))
-            .disposed(by: disposeBag)
+        output.sections.do(onNext: { [weak self] section in
+            if section[0].items.isEmpty {
+                self?.collectionView.isHidden = true
+            } else {
+                self?.collectionView.isHidden = false
+            }
+        }).bind(to: collectionView.rx.items(dataSource: dataSource))
+        .disposed(by: disposeBag)
         
         output.errorMessage.drive(with: self) { owner, error in
             let errorType = error.0
@@ -76,6 +82,7 @@ class SearchViewController: BaseViewController {
     override func configureHierarchy() {
         view.addSubview(searchBar)
         view.addSubview(cancelButton)
+        view.addSubview(emptyLabel)
         view.addSubview(collectionView)
     }
     override func configureLayout() {
@@ -89,6 +96,10 @@ class SearchViewController: BaseViewController {
             make.trailing.equalTo(view.safeAreaLayoutGuide)
             make.height.equalTo(searchBar.snp.height)
         }
+        emptyLabel.snp.makeConstraints { make in
+            make.top.equalTo(searchBar.snp.bottom)
+            make.horizontalEdges.bottom.equalTo(view.safeAreaLayoutGuide)
+        }
         collectionView.snp.makeConstraints { make in
             make.top.equalTo(searchBar.snp.bottom)
             make.horizontalEdges.bottom.equalTo(view.safeAreaLayoutGuide)
@@ -98,6 +109,10 @@ class SearchViewController: BaseViewController {
         cancelButton.setAttributedTitle(NSAttributedString(string: Strings.Global.cancel.text, attributes: [.font : Fonts.sectionTitleFont]), for: .normal)
         searchBar.placeholder = Strings.Placeholder.search.text
         collectionView.register(PosterCollectionViewCell.self, forCellWithReuseIdentifier: PosterCollectionViewCell.identifier)
+        emptyLabel.dramaTitleStyle()
+        emptyLabel.backgroundColor = .tdBlack
+        emptyLabel.textColor = .tdWhite
+        emptyLabel.text = "검색어 결과가 없습니다."
     }
     func createLayout() -> UICollectionViewCompositionalLayout {
 

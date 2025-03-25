@@ -101,7 +101,7 @@ final class EpisodeViewController: BaseViewController {
             .asDriver(onErrorJustReturn: SeasonDetail(name: "", overview: "", id: -1, poster_path: "", season_number: -1, episodes: []))
             .drive(with: self, onNext: { owner, detail in
                 owner.dramaTitleLabel.text = detail.name
-                owner.episodeCountLabel.text = "\(detail.season_number)\(Strings.Unit.count.text) \(Strings.Global.episode.text)"
+                owner.episodeCountLabel.text = detail.season_number != 0 ? "\(detail.season_number)\(Strings.Unit.count.text) \(Strings.Global.episode.text)" : Strings.Global.empty.text
                 owner.synopsisLabel.text = detail.overview
                 if let posterPath = detail.poster_path {
                     owner.posterView.kf.setImage(with: URL(string: ImageSize.poster185(url: posterPath).fullUrl))

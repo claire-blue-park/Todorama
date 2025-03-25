@@ -109,7 +109,8 @@ final class EpisodeTableViewCell: UITableViewCell {
         thumbnailImageView.kf.setImage(with: URL(string: ImageSize.profile185(url: episode.still_path ?? "").fullUrl))
         episodeNumberLabel.text = "\(episode.episode_number)\(Strings.Unit.epi.text)"
         durationLabel.text = episode.runtime == nil ? "-" : "\(episode.runtime!)\(Strings.Unit.minute.text)"
-        dateLabel.text = DateFormatHelper.shared.getFormattedDate(episode.air_date) + " " + "\(Strings.Global.air.text)"
         episodeDescriptionLabel.text = episode.overview
+        guard let airDate = episode.air_date else { return }
+        dateLabel.text = DateFormatHelper.shared.getFormattedDate(airDate) + " " + "\(Strings.Global.air.text)"
     }
 }

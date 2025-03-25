@@ -26,7 +26,6 @@ final class PosterCollectionViewCell: UICollectionViewCell {
     }
     override func prepareForReuse() {
         super.prepareForReuse()
-        print(#function)
         imageView.isHidden = false
         imageView.image = nil
         label.text = nil

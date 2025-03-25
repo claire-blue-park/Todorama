@@ -9,10 +9,9 @@ import UIKit
 import RxSwift
 import RxCocoa
 import RxDataSources
-
 import Alamofire
 
-class HomeViewController: BaseViewController {
+final class HomeViewController: BaseViewController {
 
     let disposeBag = DisposeBag()
     let viewModel = HomeViewModel()

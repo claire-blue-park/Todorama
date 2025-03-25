@@ -39,6 +39,7 @@ enum Strings {
         case none // 추가
         case empty  // 추가
         case customError(code: Int) //추가
+        case emptyData
         
         var text: String {
             switch self {
@@ -66,6 +67,8 @@ enum Strings {
                 ""
             case .customError(let code):
                 "알 수 없는 오류가 발생했습니다. (코드: \(code))"
+            case .emptyData:
+                "검색 결과가 없습니다."
             }
         }
     }

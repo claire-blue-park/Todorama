@@ -10,7 +10,7 @@ import RxSwift
 import RxCocoa
 import RxDataSources
 
-class SearchViewController: BaseViewController {
+final class SearchViewController: BaseViewController {
     let disposeBag = DisposeBag()
     let viewModel = SearchViewModel()
     let searchBar = UISearchBar()
@@ -112,7 +112,8 @@ class SearchViewController: BaseViewController {
         emptyLabel.dramaTitleStyle()
         emptyLabel.backgroundColor = .tdBlack
         emptyLabel.textColor = .tdWhite
-        emptyLabel.text = "검색어 결과가 없습니다."
+        emptyLabel.textAlignment = .center
+        emptyLabel.text = Strings.Global.emptyData.text
     }
     func createLayout() -> UICollectionViewCompositionalLayout {
 

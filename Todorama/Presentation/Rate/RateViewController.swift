@@ -10,7 +10,7 @@ import RxSwift
 import RxCocoa
 import RxDataSources
 
-class RateViewController: BaseViewController {
+final class RateViewController: BaseViewController {
     let disposeBag = DisposeBag()
     let viewModel = RateViewModel()
     let sortButton = UIButton()
@@ -97,7 +97,6 @@ class RateViewController: BaseViewController {
             .bind(with: self) { owner, model in
                 if let model = model as? RealmFetchable {
                     let id = model.dramaId
-                    print(id)
                     let vc = SeriesViewController(id: id)
                     self.navigationController?.pushViewController(vc, animated: true)
                     

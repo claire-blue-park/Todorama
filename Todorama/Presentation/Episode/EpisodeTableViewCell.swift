@@ -97,11 +97,11 @@ final class EpisodeTableViewCell: UITableViewCell {
         }
     }
     
-    func bindData(with episode: Episode, dramaId: Int, dramaName: String, seasonNumber: Int) {
+    func bindData(with episode: Episode, dramaId: Int, dramaName: String, seasonId: Int) {
         
         checkButton.setSeries(info: Watching3(dramaId: dramaId,
                                               dramaName: dramaName,
-                                              seasonNumber: seasonNumber,
+                                              seasonId: seasonId,
                                               episodeId: episode.id,
                                               episodeCount: episode.episode_number,
                                               stillCutPath: episode.still_path))

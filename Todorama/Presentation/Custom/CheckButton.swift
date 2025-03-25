@@ -42,7 +42,11 @@ final class CheckButton: UIButton {
     
     private func isWatching() -> Bool {
         guard let watchingInfo else { return false }
-        return !realm.objects(Watching2.self).where({ $0.dramaId == watchingInfo.dramaId }).isEmpty
+        
+        if let existingData = realm.objects(Watching2.self).where({ $0.seasonId == watchingInfo.seasonId }).first {
+            return existingData.episodeIds.contains(watchingInfo.episodeId)
+        }
+        return false
     }
     
     private func writeTable() {
@@ -52,33 +56,33 @@ final class CheckButton: UIButton {
             
             try realm.write {
                 // 1. 이미 있을 경우 - 에피소드만 제거
-                if isWatching {
-                    if let existingData = realm.objects(Watching2.self).where({ $0.dramaId == watchingInfo.dramaId }).first {
-                        
-                        // 1-1. 에피소드가 있을 경우
+                if let existingData = realm.objects(Watching2.self).where({ $0.seasonId == watchingInfo.seasonId }).first {
+                    if isWatching {
+                        // 1-1. 에피소드가 있을 경우 - 제거
                         if let index = existingData.episodeIds.index(of: watchingInfo.episodeId) {
                             existingData.episodeIds.remove(at: index)
-                        // 1-2. 에피소드가 없을 경우
-                        } else {
-                            existingData.episodeIds.append(watchingInfo.episodeId)
                         }
-                        
-                        // 에피소드가 모두 제거 되었을 경우 해당 내용 삭제
-                        if existingData.episodeIds.isEmpty {
-                            realm.delete(existingData)
-                        }
-                        
+                    } else {
+                        // 1-2. 에피소드가 없을 경우 - 추가
+                        existingData.episodeIds.append(watchingInfo.episodeId)
                     }
-                // 2. 새로 추가하는 경우
+                    
+                    // 에피소드가 모두 제거되었을 경우 해당 객체 삭제
+                    if existingData.episodeIds.isEmpty {
+                        realm.delete(existingData)
+                    }
                 } else {
-                    let data = Watching2(dramaId: watchingInfo.dramaId,
+                    // 2. 새로 추가하는 경우
+                    let data = Watching2(seasonId: watchingInfo.seasonId,
+                                         dramaId: watchingInfo.dramaId,
                                          dramaName: watchingInfo.dramaName,
-                                         seasonNumber: watchingInfo.seasonNumber,
                                          episodeIds: [watchingInfo.episodeId],
                                          episodeCount: watchingInfo.episodeCount,
                                          stillCutPath: watchingInfo.stillCutPath)
                     realm.add(data)
                 }
+                
+                print("Realm 파일 경로: \(Realm.Configuration.defaultConfiguration.fileURL?.absoluteString ?? "경로 없음")")
                 
                 updateWatchingButtonState()
             }

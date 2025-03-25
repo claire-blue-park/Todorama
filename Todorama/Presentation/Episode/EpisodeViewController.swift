@@ -21,8 +21,8 @@ final class EpisodeViewController: BaseViewController {
     private let episodesSectionTitleView = SectionTitleView(title: Strings.SectionTitle.episode.text)
     private let episodesTableView = UITableView()
     
-    init(series: Series, season: Int) {
-        self.viewModel = EpisodeViewModel(series: series, season: season)
+    init(series: Series, season: Int, seasonId: Int) {
+        self.viewModel = EpisodeViewModel(series: series, season: season, seasonId: seasonId)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -77,6 +77,8 @@ final class EpisodeViewController: BaseViewController {
     }
     
     override func configureView() {
+        navigationItem.title = viewModel.series.name
+        
         posterView.backgroundColor = .tdWhite
         posterView.layer.cornerRadius = 4
         posterView.contentMode = .scaleAspectFill
@@ -118,7 +120,7 @@ final class EpisodeViewController: BaseViewController {
                     cell.bindData(with: episode,
                                   dramaId: self.viewModel.series.id,
                                   dramaName: self.viewModel.series.name,
-                                  seasonNumber: self.viewModel.series.number_of_seasons)
+                                  seasonId: self.viewModel.seasonId)
                 }
                 .disposed(by: disposeBag)
         
@@ -137,7 +139,6 @@ final class EpisodeViewController: BaseViewController {
     }
     
     private func loadData(with seasonDetail: SeasonDetail) {
-
         dramaTitleLabel.text = seasonDetail.name
         episodeCountLabel.text = "\(seasonDetail.season_number)\(Strings.Unit.count.text) \(Strings.Global.episode.text)"
         synopsisLabel.text = seasonDetail.overview

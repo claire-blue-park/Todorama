@@ -88,7 +88,8 @@ final class SeriesViewController: BaseViewController {
                 let selectedSeason = series.seasons[indexPath.row]
                 
                 let controller = EpisodeViewController(series: series,
-                                                       season: selectedSeason.season_number)
+                                                       season: selectedSeason.season_number,
+                                                       seasonId: selectedSeason.id)
                 self?.navigationController?.pushViewController(controller, animated: true)
             })
             .disposed(by: disposeBag)

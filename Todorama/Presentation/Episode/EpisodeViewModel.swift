@@ -14,10 +14,12 @@ final class EpisodeViewModel: BaseViewModel {
     
     let series: Series
     let season: Int
+    let seasonId: Int
     
-    init(series: Series, season: Int) {
+    init(series: Series, season: Int, seasonId: Int) {
         self.series = series
         self.season = season
+        self.seasonId = seasonId
     }
     
     struct Input {

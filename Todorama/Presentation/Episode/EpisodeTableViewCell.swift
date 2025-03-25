@@ -7,6 +7,9 @@
 
 import UIKit
 import SnapKit
+import RealmSwift
+import RxCocoa
+import RxSwift
 
 final class EpisodeTableViewCell: UITableViewCell {
 
@@ -15,7 +18,10 @@ final class EpisodeTableViewCell: UITableViewCell {
     private let durationLabel = UILabel()
     private let dateLabel = UILabel()
     private let episodeDescriptionLabel = UILabel()
-    private let checkmarkImageView = UIImageView()
+    private let checkButton = CheckButton()
+
+    private var dramaId: Int? // 드라마 ID를 저장할 변수
+    private let disposeBag = DisposeBag()
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -29,7 +35,6 @@ final class EpisodeTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    
     private func configureView() {
         selectionStyle = .none
         
@@ -41,26 +46,19 @@ final class EpisodeTableViewCell: UITableViewCell {
         
         // 텍스트 영역
         episodeNumberLabel.dramaTitleStyle()
-        durationLabel.textStyle() // ✅
+        durationLabel.textStyle()
         dateLabel.textStyle()
         episodeDescriptionLabel.textStyle()
         episodeDescriptionLabel.numberOfLines = 3
-        
-        // 체크 영역 // ✅
-        checkmarkImageView.contentMode = .scaleAspectFit
-        checkmarkImageView.tintColor = .systemYellow
-        checkmarkImageView.image = SystemImages.check.image
-
     }
     
     private func configureHierarchy() {
         [thumbnailImageView,
          episodeNumberLabel, durationLabel, dateLabel, episodeDescriptionLabel,
-         checkmarkImageView].forEach {
+         checkButton].forEach {
             contentView.addSubview($0)
         }
     }
-
     
     private func configureLayout() {
         thumbnailImageView.snp.makeConstraints { make in
@@ -80,7 +78,7 @@ final class EpisodeTableViewCell: UITableViewCell {
             make.leading.equalTo(episodeNumberLabel.snp.leading)
         }
         
-        checkmarkImageView.snp.makeConstraints { make in
+        checkButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(16)
             make.centerY.equalTo(episodeNumberLabel)
             make.width.height.equalTo(24)
@@ -99,15 +97,19 @@ final class EpisodeTableViewCell: UITableViewCell {
         }
     }
     
-    // MARK: - Configure Cell
-    
-    func bindData(with episode: Episode) {
+    func bindData(with episode: Episode, dramaId: Int, dramaName: String, seasonNumber: Int) {
+        
+        checkButton.setSeries(info: Watching3(dramaId: dramaId,
+                                              dramaName: dramaName,
+                                              seasonNumber: seasonNumber,
+                                              episodeId: episode.id,
+                                              episodeCount: episode.episode_number,
+                                              stillCutPath: episode.still_path))
+        
         thumbnailImageView.kf.setImage(with: URL(string: ImageSize.profile185(url: episode.still_path ?? "").fullUrl))
         episodeNumberLabel.text = "\(episode.episode_number)\(Strings.Unit.epi.text)"
         durationLabel.text = episode.runtime == nil ? "-" : "\(episode.runtime!)\(Strings.Unit.minute.text)"
         dateLabel.text = DateFormatHelper.shared.getFormattedDate(episode.air_date) + " " + "\(Strings.Global.air.text)"
         episodeDescriptionLabel.text = episode.overview
-        checkmarkImageView.tintColor = .tdDarkGray
-//        checkmarkImageView.tintColor = episode.isWatched ? .tdMain : .tdDarkGray
     }
 }

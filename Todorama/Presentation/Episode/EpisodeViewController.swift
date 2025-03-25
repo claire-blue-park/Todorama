@@ -21,8 +21,6 @@ final class EpisodeViewController: BaseViewController {
     private let episodesSectionTitleView = SectionTitleView(title: Strings.SectionTitle.episode.text)
     private let episodesTableView = UITableView()
     
-    private lazy var buttonStackView = ButtonStack(drama: Drama())
-    
     init(series: Series, season: Int) {
         self.viewModel = EpisodeViewModel(series: series, season: season)
         super.init(nibName: nil, bundle: nil)
@@ -38,7 +36,7 @@ final class EpisodeViewController: BaseViewController {
     
     override func configureHierarchy() {
         [posterView, dramaTitleLabel, episodeCountLabel, synopsisLabel,
-         episodesSectionTitleView, buttonStackView, episodesTableView].forEach {
+         episodesSectionTitleView, episodesTableView].forEach {
             view.addSubview($0)
         }
     }
@@ -64,16 +62,10 @@ final class EpisodeViewController: BaseViewController {
             make.top.equalTo(episodeCountLabel.snp.bottom).offset(12)
             make.horizontalEdges.equalTo(dramaTitleLabel)
         }
-        
-        buttonStackView.snp.makeConstraints { make in
-            make.top.equalTo(posterView.snp.bottom).offset(24)
-            make.centerX.equalToSuperview()
-            make.height.equalTo(44)
-        }
-        
+
         episodesSectionTitleView.snp.makeConstraints { make in
             make.height.equalTo(44)
-            make.top.equalTo(buttonStackView.snp.bottom).offset(12)
+            make.top.equalTo(posterView.snp.bottom).offset(12)
             make.horizontalEdges.equalToSuperview()
         }
         
@@ -122,16 +114,14 @@ final class EpisodeViewController: BaseViewController {
                 .asDriver(onErrorJustReturn: [])
                 .drive(episodesTableView.rx.items(cellIdentifier: EpisodeTableViewCell.identifier, cellType: EpisodeTableViewCell.self)) { [weak self] row, episode, cell in
                     guard let self = self else { return }
-                    cell.bindData(with: episode, dramaId: self.viewModel.series.id)
+
+                    cell.bindData(with: episode,
+                                  dramaId: self.viewModel.series.id,
+                                  dramaName: self.viewModel.series.name,
+                                  seasonNumber: self.viewModel.series.number_of_seasons)
                 }
                 .disposed(by: disposeBag)
         
-        buttonStackView.commentButtonTapped
-            .subscribe(with: self, onNext: { owner, _ in
-                let controller = EditingCommentViewController()
-                owner.navigationController?.pushViewController(controller, animated: true)
-            })
-            .disposed(by: disposeBag)
     }
     
     

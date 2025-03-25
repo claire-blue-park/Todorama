@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import RealmSwift
 import RxSwift
 import RxCocoa
 
@@ -33,6 +34,11 @@ final class EditingCommentViewController: BaseViewController {
     
     private let disposeBag = DisposeBag()
     
+    override func configureView() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "저장", style: .done, target: nil, action: nil)
+        navigationItem.rightBarButtonItem?.isEnabled = false
+    }
+    
     override func configureHierarchy() {
         view.addSubview(commentTextView)
         view.addSubview(characterCountLabel)
@@ -55,18 +61,22 @@ final class EditingCommentViewController: BaseViewController {
         let maxCharacterCount = 500
         
         commentTextView.rx.text.orEmpty
-            .map { text -> String in
-                let trimmedText = String(text.prefix(maxCharacterCount))
-                return trimmedText
-            }
-            .bind(to: commentTextView.rx.text)
-            .disposed(by: disposeBag)
-        
-        commentTextView.rx.text.orEmpty
-            .map { text -> String in
-                "\(text.count)/\(maxCharacterCount)"
-            }
-            .bind(to: characterCountLabel.rx.text)
+                .map { !$0.isEmpty }
+                .bind(to: navigationItem.rightBarButtonItem!.rx.isEnabled)
+                .disposed(by: disposeBag)
+
+        navigationItem.rightBarButtonItem?.rx.tap
+            .subscribe(onNext: { [weak self] in
+                guard let self = self else { return }
+                let realm = try! Realm()
+                let drama = Drama() // 데이터 필요
+                let comment = Comment(drama: drama, comment: self.commentTextView.text)
+                
+                try! realm.write {
+                    realm.add(comment, update: .modified)
+                }
+                self.navigationController?.popViewController(animated: true)
+            })
             .disposed(by: disposeBag)
 
     }

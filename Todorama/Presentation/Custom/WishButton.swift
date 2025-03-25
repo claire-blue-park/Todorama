@@ -10,16 +10,6 @@ import RealmSwift
 import RxCocoa
 import RxSwift
 
-//final class WishButton: Object {
-//    @Persisted(primaryKey: true) var id:  ObjectId
-//    @Persisted(indexed: true) var itemId: Int
-//    
-//    convenience init(itemId: Int) {
-//        self.init()
-//        self.itemId = itemId
-//    }
-//}
-
 final class WishButton: UIButton {
     private let disposeBag = DisposeBag()
 
@@ -73,9 +63,6 @@ final class WishButton: UIButton {
                 }
                 
                 updateWishButtonState()
-                
-//                NotificationCenter.default.post(name: .interestNoti,
-//                                                object: nil)
             }
             print("realm 저장 완료")
             
@@ -88,7 +75,6 @@ final class WishButton: UIButton {
     @objc
     private func onButtonTapped() {
         writeTable()
-//        NotificationCenter.default.post(name: .interestNoti, object: nil, userInfo: nil)
     }
     
     func updateWishButtonState() {

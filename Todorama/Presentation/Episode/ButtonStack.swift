@@ -7,10 +7,14 @@
 
 import UIKit
 import SnapKit
+import RealmSwift
 import RxSwift
 import RxCocoa
 
 final class ButtonStack: UIStackView {
+    private let series: Series
+    private let disposeBag = DisposeBag()
+    
     let commentButtonTapped = PublishSubject<Void>()
     
     private let wantToWatchButton = IconLabelButton(
@@ -42,10 +46,9 @@ final class ButtonStack: UIStackView {
         return textField
     }()
     
-    private let disposeBag = DisposeBag()
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    init(series: Series) {
+        self.series = series
+        super.init(frame: .zero)
         setupButtonStack()
         setupRateTextField()
         setupPickerBinding()
@@ -66,24 +69,40 @@ final class ButtonStack: UIStackView {
     }
     
     private func setupBindings() {
+        // 보고싶어요 버튼
         wantToWatchButton.rx.tap
-        
             .subscribe(onNext: { [weak self] in
-                print("🌟 WANT TO WATCH")
-       
-            })
+                guard let self = self else { return }
+                let realm = try! Realm()
+            
+                let genreId = series.genres.first?.id ?? 00
+                let drama = Drama(dramaId: series.id, name: series.name, backdropPath: series.backdrop_path ?? "", genre: genreId)
+                
+                let wishListItem = WishList(drama: drama)
+
+                let existingItem = realm.objects(WishList.self).filter("drama.dramaId == %@", series.id).first
+                
+                try! realm.write {
+                    if let itemToDelete = existingItem {
+                        realm.delete(itemToDelete)
+                        print("WishList에서 삭제됨: \(drama.name)")
+                    } else {
+                        realm.add(wishListItem, update: .modified)
+                        print("WishList에 추가됨: \(drama.name)")
+                    }
+                }            })
             .disposed(by: disposeBag)
         
+        // 코멘트 버튼
         commentButton.rx.tap
             .subscribe(onNext: { [weak self] in
-                print("🌟 COMMENT")
                 self?.commentButtonTapped.onNext(())
             })
             .disposed(by: disposeBag)
         
+        // 별점 버튼
         rateButton.rx.tap
             .subscribe(onNext: { [weak self] in
-                print("🌟 RATE")
                 self?.showRatePicker()
             })
             .disposed(by: disposeBag)
@@ -124,12 +143,22 @@ final class ButtonStack: UIStackView {
         toolbar.setItems([cancelButton, flexibleSpace, doneButton], animated: false)
         
         doneButton.rx.tap
+        
             .subscribe(onNext: { [weak self] in
                 guard let self = self else { return }
                 let selectedRating = self.rateTextField.text ?? "0.0"
-                print("선택 별점: \(selectedRating)")
-                self.rateButton.setRating(selectedRating) // 별점 설정
+                self.rateButton.setRating(selectedRating)
                 self.rateTextField.resignFirstResponder()
+                
+                let realm = try! Realm()
+                // series를 사용해 Drama 객체 생성
+                let genreId = self.series.genres.first?.id ?? 0
+                let drama = Drama(dramaId: self.series.id, name: self.series.name, backdropPath: self.series.backdrop_path ?? Strings.Global.empty.text, genre: genreId)
+                let rating = Rating(drama: drama, rate: Double(selectedRating) ?? 0.0, posterPath: nil)
+                
+                try! realm.write {
+                    realm.add(rating, update: .modified)
+                }
             })
             .disposed(by: disposeBag)
         

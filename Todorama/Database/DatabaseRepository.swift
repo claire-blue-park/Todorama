@@ -55,6 +55,21 @@ final class DatabaseRepository: DatabaseRepositoryPr {
             print("아이템 삭제 실패: \(error)")
         }
     }
+    
+    
+    func updateEpisodeIds<T: RealmFetchable>(itemId: Int, newEpisodeIds: [Int], type: T) {
+        do {
+            try realm.write {
+                if let target = realm.objects(T.self).where({ $0.dramaId == itemId }).first as? Watching {
+                    target.episodeIds.removeAll() // 기존 리스트 삭제
+                    target.episodeIds.append(objectsIn: newEpisodeIds) // 새로운 리스트 추가
+                }
+            }
+        } catch {
+            print("리스트 수정 실패: \(error)")
+        }
+    }
+    
 }
 
 final class MockRepository: DatabaseRepositoryPr {

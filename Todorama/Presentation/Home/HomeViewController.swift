@@ -30,21 +30,19 @@ class HomeViewController: BaseViewController {
             make.edges.bottom.equalTo(view.safeAreaLayoutGuide)
         }
         collectionView.snp.makeConstraints { make in
-            make.verticalEdges.equalTo(view.safeAreaLayoutGuide)
+            make.top.equalTo(scrollView).offset(-44)
+            make.bottom.equalTo(view.safeAreaLayoutGuide)
             make.width.equalTo(scrollView)
         }
     }
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        navigationController?.navigationBar.isHidden = false
     }
     override func configureView() {
-        navigationController?.navigationBar.isHidden = true
         collectionView.register(PosterCollectionViewCell.self, forCellWithReuseIdentifier: PosterCollectionViewCell.identifier)
         collectionView.register(BackdropCollectionViewCell.self, forCellWithReuseIdentifier: BackdropCollectionViewCell.identifier)
 
         collectionView.register(SectionHeaderView.self,   forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: SectionHeaderView.reuseIdentifier)
-
     }
     func popularSectionLayout() -> NSCollectionLayoutSection {
         let itemSize = NSCollectionLayoutSize(
@@ -117,7 +115,8 @@ class HomeViewController: BaseViewController {
     }
 
     override func bind() {
-        let input = HomeViewModel.Input()
+        let callRequestTrigger = PublishSubject<Void>()
+        let input = HomeViewModel.Input(callRequestTrigger: callRequestTrigger)
         let output = viewModel.transform(input: input)
         let dataSource = RxCollectionViewSectionedReloadDataSource<SectionModel<String, AnyHashable>>( configureCell: { dataSource, collectionView, indexPath, item in
             if let popular = item.base as? PopularDetail {
@@ -147,6 +146,18 @@ class HomeViewController: BaseViewController {
         
         output.sections.bind(to: collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
+        
+        output.errorMessage.drive(with: self) { owner, error in
+            let errorType = error.0
+            let errorMessage = errorType.errorMessage
+            if errorType == .networkError {
+                owner.showAlert(text: errorMessage) {
+                    callRequestTrigger.onNext(())
+                }
+            } else {
+                owner.showAlert(text: errorMessage)
+            }
+        }.disposed(by: disposeBag)
         
         collectionView.rx.modelSelected(Any.self)
             .bind(with: self) { owner, model in

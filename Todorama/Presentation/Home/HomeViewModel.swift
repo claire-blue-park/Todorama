@@ -15,10 +15,11 @@ class HomeViewModel: BaseViewModel {
     private(set) var internalData: InternalData
     let headerTitle = [Strings.SectionTitle.popularDrama.text, Strings.SectionTitle.similarContents.text]
     struct Input {
-        
+        let callRequestTrigger: Observable<Void>
     }
     struct Output {
         let sections: Observable<[SectionModel<String, AnyHashable>]>
+        let errorMessage: Driver<(NetworkError, Bool)>
     }
     struct InternalData {
         let popularData = PublishSubject<[PopularDetail]>()
@@ -34,9 +35,15 @@ class HomeViewModel: BaseViewModel {
     func transform(input: Input) -> Output {
         getPopularData()
         getTrendData()
+        
+        input.callRequestTrigger.bind(with: self) { owner, _ in
+            owner.getPopularData()
+            owner.getTrendData()
+        }.disposed(by: disposeBag)
+        
         let sections = getSectionData()
         
-        return Output(sections: sections)
+        return Output(sections: sections, errorMessage: internalData.errorMessageTrigger.asDriver(onErrorJustReturn: (.customError(code: 000, message: Strings.Global.customError(code: 000).text), false)))
     }
     private func getSectionData() -> Observable<[SectionModel<String, AnyHashable>]> {
         
@@ -50,7 +57,7 @@ class HomeViewModel: BaseViewModel {
             .disposed(by: disposeBag)
 
         let popularData = internalData.popularData.map { popularList in
-            [SectionModel(model: "실시간 인기 드라마", items: popularList.map { AnyHashable($0) })]
+            [SectionModel(model: Strings.Global.empty.text, items: popularList.map { AnyHashable($0) })]
         }
         let trendData = Observable.combineLatest(internalData.trendData, headerTitle)
             .map { trendList, titles in

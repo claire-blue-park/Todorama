@@ -62,11 +62,13 @@ final class PosterCollectionViewCell: UICollectionViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     func configure(with imageName: String?,title: String?, rate: Double? = nil) {
-        if let imageName {
-            let imageBase = "https://image.tmdb.org/t/p/w500"
-            let url = URL(string: imageBase + imageName)
+        if let imageName, !imageName.isEmpty {
+            imageView.isHidden = false
+            // 하드코딩된 URL 대신 ImageSize enum 사용
+            let fullUrl = ImageSize.poster500(url: imageName).fullUrl
+            let url = URL(string: fullUrl)
             imageView.kf.setImage(with: url)
         } else {
             imageView.isHidden = true

@@ -131,9 +131,9 @@ class BackdropCollectionViewCell: UICollectionViewCell {
             genreLabel.text = item.genre
             
             if let imagePath = item.imagePath, !imagePath.isEmpty {
-                // 이미지 URL 생성
-                let imageBase = "https://image.tmdb.org/t/p/w500"
-                let url = URL(string: imageBase + imagePath)
+                // TMDBRequest의 ImageSize enum 활용
+                let fullUrl = ImageSize.poster154(url: imagePath).fullUrl
+                let url = URL(string: fullUrl)
                 
                 backdropImageView.kf.setImage(with: url, placeholder: UIImage(systemName: "film"), options: nil, completionHandler: { result in
                     switch result {

@@ -17,6 +17,7 @@ final class ArchiveViewController: BaseViewController {
     // MARK: - Properties
     private let viewModel = ArchiveViewModel()
     private let disposeBag = DisposeBag()
+    private let viewWillAppearSubject = PublishSubject<Void>()
     
     // MARK: - UI Components
     // 상단 카테고리 버튼들
@@ -40,6 +41,11 @@ final class ArchiveViewController: BaseViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+    }
+    // 뷰컨 재진입시 UI 및 정보 업데이트를 위한 서브젝트
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        viewWillAppearSubject.onNext(())
     }
     
     // MARK: - Methods
@@ -148,7 +154,8 @@ final class ArchiveViewController: BaseViewController {
         
         // ViewModel 바인딩
         let input = ArchiveViewModel.Input(
-            viewDidLoad: Observable.just(())
+            viewDidLoad: Observable.just(()),
+            viewWillAppear: viewWillAppearSubject.asObservable()
         )
         
         let output = viewModel.transform(input: input)

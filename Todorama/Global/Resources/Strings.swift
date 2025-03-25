@@ -38,6 +38,7 @@ enum Strings {
         case air
         case none // 추가
         case empty  // 추가
+        case customError(code: Int) //추가
         
         var text: String {
             switch self {
@@ -63,6 +64,22 @@ enum Strings {
                 "none"
             case .empty: // 추가
                 ""
+            case .customError(let code):
+                "알 수 없는 오류가 발생했습니다. (코드: \(code))"
+            }
+        }
+    }
+    
+    enum Alert {
+        case title
+        case retry
+        
+        var text: String {
+            switch self {
+            case .title:
+                "알림"
+            case .retry:
+                "다시 시도하기"
             }
         }
     }

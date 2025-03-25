@@ -95,9 +95,12 @@ class RateViewController: BaseViewController {
         
         collectionView.rx.modelSelected(Any.self)
             .bind(with: self) { owner, model in
-                if let model = model as? IdentifiableModel {
-                    let id = model.id
-                    // push seriesVC
+                if let model = model as? RealmFetchable {
+                    let id = model.dramaId
+                    print(id)
+                    let vc = SeriesViewController(id: id)
+                    self.navigationController?.pushViewController(vc, animated: true)
+                    
                 }
             }.disposed(by: disposeBag)
     }

@@ -32,7 +32,8 @@ class SearchViewController: BaseViewController {
                 return offsetY > contentHeight - frameHeight - 100
             }
             .map { _ in }
-        let input = SearchViewModel.Input(cancelButtonTapped: cancelButton.rx.tap, searchButtonTapped: searchBar.rx.searchButtonClicked.withLatestFrom(searchBar.rx.text.orEmpty), scrollTrigger: scrollEvent)
+        let callRequestTrigger = PublishSubject<Void>()
+        let input = SearchViewModel.Input(cancelButtonTapped: cancelButton.rx.tap, searchButtonTapped: searchBar.rx.searchButtonClicked.withLatestFrom(searchBar.rx.text.orEmpty), scrollTrigger: scrollEvent, callRequestTrigger: callRequestTrigger)
         let output = viewModel.transform(input: input)
         output.resignKeyboardTrigger.drive(with: self) { owner, _ in
             owner.view.endEditing(true)
@@ -51,11 +52,17 @@ class SearchViewController: BaseViewController {
         })
         output.sections.bind(to: collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
-        output.errorMessage.drive(with: self) { owner, error in
-            let errorMessage = error.0.errorMessage
-            print(errorMessage)
-            let isConnected = error.1
         
+        output.errorMessage.drive(with: self) { owner, error in
+            let errorType = error.0
+            let errorMessage = errorType.errorMessage
+            if errorType == .networkError {
+                owner.showAlert(text: errorMessage) {
+                    callRequestTrigger.onNext(())
+                }
+            } else {
+                owner.showAlert(text: errorMessage)
+            }
         }.disposed(by: disposeBag)
         collectionView.rx.modelSelected(Any.self)
             .bind(with: self) { owner, model in

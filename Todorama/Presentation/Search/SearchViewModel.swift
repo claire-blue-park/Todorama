@@ -17,13 +17,13 @@ final class SearchViewModel: BaseViewModel {
         let cancelButtonTapped: ControlEvent<Void>
         let searchButtonTapped: Observable<ControlProperty<String>.Element>
         let scrollTrigger: Observable<Void>
+        let callRequestTrigger: Observable<Void>
     }
     struct Output {
         let sections: Observable<[SectionModel<String, AnyHashable>]>
         let cancelButtonTapped: Driver<Void>
         let errorMessage : Driver<(NetworkError, Bool)>
         let resignKeyboardTrigger: Driver<Void>
-        let testData: Observable<[PopularDetail]>
     }
     struct InternalData {
         let searchData = BehaviorSubject<[PopularDetail]>(value: [PopularDetail]())
@@ -39,7 +39,6 @@ final class SearchViewModel: BaseViewModel {
         internalData = InternalData(networkStatus: NetworkMonitor.shared.currentStatus)
     }
     func transform(input: Input) -> Output {
-        let testData = internalData.searchData.asObserver()
         let sectionData = internalData.searchData
             .map { popularList in
                 [SectionModel(model: Strings.Global.empty.text, items: popularList.map { AnyHashable($0) })]
@@ -51,6 +50,11 @@ final class SearchViewModel: BaseViewModel {
         input.searchButtonTapped.bind(with: self) { owner, newText in
             guard let oldText = try? owner.internalData.query.value(), oldText != newText else {return}
             owner.internalData.query.onNext(newText)
+        }.disposed(by: disposeBag)
+        
+        input.callRequestTrigger.bind(with: self) { owner, _ in
+            guard let oldText = try? owner.internalData.query.value() else {return}
+            owner.internalData.query.onNext(oldText)
         }.disposed(by: disposeBag)
         
         internalData.query.bind(with: self) { owner, query in
@@ -67,7 +71,7 @@ final class SearchViewModel: BaseViewModel {
                 }
             }
             .disposed(by: disposeBag)
-        return Output(sections: sectionData, cancelButtonTapped: input.cancelButtonTapped.asDriver(), errorMessage: internalData.errorMessageTrigger.asDriver(onErrorJustReturn: (.customError(code: 000, message: "알수없는 에러"), false)), resignKeyboardTrigger: resignKeyboardTrigger, testData: testData)
+        return Output(sections: sectionData, cancelButtonTapped: input.cancelButtonTapped.asDriver(), errorMessage: internalData.errorMessageTrigger.asDriver(onErrorJustReturn: (.customError(code: 000, message: Strings.Global.customError(code: 000).text), false)), resignKeyboardTrigger: resignKeyboardTrigger)
     }
     private func getSearchData(page: Int) {
         guard let query = try? internalData.query.value() else {return}

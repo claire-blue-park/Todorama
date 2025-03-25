@@ -117,7 +117,8 @@ class HomeViewController: BaseViewController {
     }
 
     override func bind() {
-        let input = HomeViewModel.Input()
+        let callRequestTrigger = PublishSubject<Void>()
+        let input = HomeViewModel.Input(callRequestTrigger: callRequestTrigger)
         let output = viewModel.transform(input: input)
         let dataSource = RxCollectionViewSectionedReloadDataSource<SectionModel<String, AnyHashable>>( configureCell: { dataSource, collectionView, indexPath, item in
             if let popular = item.base as? PopularDetail {
@@ -147,6 +148,18 @@ class HomeViewController: BaseViewController {
         
         output.sections.bind(to: collectionView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
+        
+        output.errorMessage.drive(with: self) { owner, error in
+            let errorType = error.0
+            let errorMessage = errorType.errorMessage
+            if errorType == .networkError {
+                owner.showAlert(text: errorMessage) {
+                    callRequestTrigger.onNext(())
+                }
+            } else {
+                owner.showAlert(text: errorMessage)
+            }
+        }.disposed(by: disposeBag)
         
         collectionView.rx.modelSelected(Any.self)
             .bind(with: self) { owner, model in

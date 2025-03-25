@@ -59,7 +59,7 @@ class NetworkManager {
         case 429:
             return .tooManyRequests
         default:
-            return .customError(code: code, message: "알 수 없는 오류가 발생했습니다. (코드: \(code))")
+            return .customError(code: code, message: Strings.Global.customError(code: code).text)
         }
     }
 }

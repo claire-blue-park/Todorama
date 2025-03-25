@@ -135,7 +135,7 @@ final class BackdropCollectionViewCell: UICollectionViewCell {
                 let fullUrl = ImageSize.poster154(url: imagePath).fullUrl
                 let url = URL(string: fullUrl)
                 
-                backdropImageView.kf.setImage(with: url, placeholder: UIImage(systemName: "film"), options: nil, completionHandler: { result in
+                backdropImageView.kf.setImage(with: url, placeholder: UIImage(systemName: SystemImages.film.name), options: nil, completionHandler: { result in
                     switch result {
                     case .success(_):
                         // 이미지 로드 성공
@@ -151,8 +151,8 @@ final class BackdropCollectionViewCell: UICollectionViewCell {
                 showEmptyState(with: item.name)
             }
         } else {
-            showEmptyState(with: "title")
-            genreLabel.text = "Genre"
+            showEmptyState(with: Strings.Global.none.text)
+            genreLabel.text = Strings.Global.none.text
         }
         
         // 프로그레스 표시 여부 설정

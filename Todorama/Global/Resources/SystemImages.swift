@@ -14,6 +14,7 @@ enum SystemImages {
     case eye
     case pencil
     case heart
+    case film
     
     enum tab {
         case houseICON
@@ -46,6 +47,8 @@ enum SystemImages {
             "square.and.pencil.circle.fill"
         case .heart:
             "heart.fill"
+        case .film:
+            "film"
         }
     }
     

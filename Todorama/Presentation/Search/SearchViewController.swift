@@ -113,7 +113,7 @@ final class SearchViewController: BaseViewController {
         emptyLabel.backgroundColor = .tdBlack
         emptyLabel.textColor = .tdWhite
         emptyLabel.textAlignment = .center
-        emptyLabel.text = "검색어 결과가 없습니다."
+        emptyLabel.text = Strings.Global.emptyData.text
     }
     func createLayout() -> UICollectionViewCompositionalLayout {
 
